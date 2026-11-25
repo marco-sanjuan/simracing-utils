@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Moza R3 · FFB por simulador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: hoja de reglaje de un mecánico de rally, directa y técnica
+   IDEA: la "setup sheet" que se pega en el box: una hoja por coche/juego
+   PICTURE: el aro del R3 dentro de un arco de giro que muestra el ángulo de cada juego
+   COLOUR and TYPE: asfalto claro, rojo de competición, grafito; Barlow Condensed + Barlow
+   LAYOUT: selector de juego arriba, hoja con volante + cifras clave, pestañas de ajustes */
+:root{color-scheme:light dark;
+--bg:light-dark(#eef0f2,#131416);--card:light-dark(#fff,#1d1f22);--ink:light-dark(#16181b,#eceef0);
+--mute:light-dark(#5b626b,#9aa2ab);--line:light-dark(#d6dadf,#2e3236);--red:#d7261e;--red2:light-dark(#b81d16,#ff5a4f);
+--gravel:light-dark(#c9b48f,#8a7552);--chip:light-dark(#e2e5e9,#25282c)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Barlow,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Barlow Condensed",Barlow,sans-serif;line-height:1.05;margin:0;text-wrap:balance}
+h1{font-size:clamp(32px,5vw,48px)}h2{font-size:clamp(26px,3.4vw,34px)}h3{font-size:20px}
+.band{padding:clamp(22px,4vw,48px) max(5vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+.top{background:var(--red);color:#fff}
+.top p{margin:.5em 0 0;max-width:64ch;opacity:.92}
+.picker{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.picker button{font:600 16px Barlow,sans-serif;min-height:44px;padding:8px 14px;border-radius:10px;border:2px solid rgba(255,255,255,.55);background:transparent;color:#fff;cursor:pointer}
+.picker button[aria-pressed=true]{background:#fff;color:var(--red);border-color:#fff}
+.picker small{display:block;font-size:13px;opacity:.8;font-weight:500}
+.picker .grp{width:100%;font-size:13px;opacity:.85;margin:6px 0 -2px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gravel);outline-offset:2px}
+.sheet{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:clamp(18px,3vw,40px);align-items:center}
+.wheelbox{position:relative;aspect-ratio:1;max-width:360px;width:100%;margin:0 auto}
+.wheelbox svg{width:100%;height:100%}
+#rim{transition:transform .9s cubic-bezier(.3,1.4,.5,1);transform-origin:180px 180px}
+@media (prefers-reduced-motion:reduce){#rim{transition:none}}
+.kind{display:inline-block;font-size:13px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--chip);color:var(--mute)}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi b{display:block;font:700 clamp(28px,4vw,40px)/1 "Barlow Condensed",sans-serif;white-space:nowrap}
+.kpi span{font-size:13px;color:var(--mute)}
+.summary{max-width:68ch;margin:10px 0 0}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:2px solid var(--line);margin-bottom:18px}
+.tabs button{font:600 16px Barlow,sans-serif;min-height:44px;padding:8px 16px;border:0;background:none;color:var(--mute);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabs button[aria-selected=true]{color:var(--ink);border-color:var(--red)}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:13px;color:var(--mute);font-weight:600;background:var(--chip)}
+td.v{font-weight:700;white-space:nowrap;color:var(--red2)}
+td.r{white-space:nowrap;color:var(--mute);font-size:14px}
+td.w{font-size:14px;color:var(--mute)}
+td.s{font-size:13px;color:var(--mute);font-weight:600;background:var(--chip)}
+input.mine{width:6.5em;font:16px Barlow,sans-serif;min-height:40px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.eq{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:end;height:170px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 14px 0}
+.eq div{display:flex;flex-direction:column;justify-content:flex-end;height:100%;text-align:center;font-size:13px}
+.eq i{display:block;background:var(--red);border-radius:6px 6px 0 0;min-height:3px}
+.eq em{font-style:normal;font-weight:700;margin-bottom:4px}
+.eq span{padding:6px 0;color:var(--mute)}
+.steps{counter-reset:s;list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.steps li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+.steps input{width:22px;height:22px;margin-top:2px;accent-color:var(--red);flex:none}
+.steps li.done span{text-decoration:line-through;color:var(--mute)}
+.note{background:var(--card);border-left:4px solid var(--gravel);border-radius:8px;padding:12px 14px;margin:14px 0;font-size:15px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0}
+.btn{font:600 16px Barlow,sans-serif;min-height:44px;padding:8px 16px;border-radius:10px;border:2px solid var(--red);background:var(--red);color:#fff;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--red2)}
+#toast{font-size:14px;color:var(--mute)}
+.faq{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px}
+.faq details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.faq summary{font-weight:600;cursor:pointer;min-height:28px}
+.faq p{margin:.6em 0 0;font-size:15px;color:var(--mute)}
+pre{background:var(--chip);border-radius:8px;padding:10px;font-size:13px;overflow-x:auto}
+code{overflow-wrap:anywhere}
+.foot{font-size:14px;color:var(--mute)}
+.foot a{color:var(--red2)}
+@media(max-width:760px){.sheet{grid-template-columns:1fr}.wheelbox{max-width:260px}}
+@media(max-width:600px){table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--line)}.stack td{display:flow-root;border:0;padding:3px 12px;padding-inline-start:8.4em;text-align:start;white-space:normal}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-7.8em;white-space:normal;color:var(--mute);font-weight:500;font-size:13px}.stack td:empty{display:none}.stack td.s{padding-inline-start:12px}.stack td.s::before{display:none}.kpis{grid-template-columns:1fr 1fr 1fr;gap:8px}.kpi{padding:10px}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<header class="band top"><div class="wrap">
+  <h1>Moza R3: force feedback juego a juego</h1>
+  <p>Hojas de reglaje para Pit House y para cada simulador, pensadas para el R3 (3,9 Nm), aro redondo, SRP Lite y tu freno de mano y palanca USB. Son puntos de partida: ajusta de uno en uno y apunta tus valores en la columna «Mi valor».</p>
+  <div class="picker" id="picker" role="group" aria-label="Simulador"></div>
+</div></header>
+
+<main>
+<section class="band"><div class="wrap">
+  <div class="sheet">
+    <div class="wheelbox" aria-hidden="true">
+      <svg viewBox="0 0 360 360">
+        <circle cx="180" cy="180" r="160" fill="none" stroke="var(--line)" stroke-width="16"/>
+        <path id="arc" fill="none" stroke="var(--red)" stroke-width="16" stroke-linecap="round"/>
+        <text id="arcTxt" x="180" y="356" text-anchor="middle" font-family="Barlow" font-size="15" fill="var(--mute)"></text>
+        <g id="rim">
+          <circle cx="180" cy="180" r="118" fill="none" stroke="var(--ink)" stroke-width="22"/>
+          <circle cx="180" cy="180" r="118" fill="none" stroke="var(--gravel)" stroke-width="2" stroke-dasharray="3 7" opacity=".7"/>
+          <rect x="172" y="50" width="16" height="26" rx="3" fill="var(--red)"/>
+          <path d="M70 196 L140 196 Q160 196 166 216 L174 262 L186 262 L194 216 Q200 196 220 196 L290 196 L290 172 L220 172 Q200 172 180 160 Q160 172 140 172 L70 172Z" fill="var(--ink)"/>
+          <circle cx="180" cy="184" r="34" fill="var(--card)" stroke="var(--ink)" stroke-width="6"/>
+          <text x="180" y="190" text-anchor="middle" font-family="Barlow Condensed" font-weight="700" font-size="18" fill="var(--ink)">R3</text>
+        </g>
+      </svg>
+    </div>
+    <div>
+      <span class="kind" id="kind"></span>
+      <h2 id="gname" style="margin-top:8px"></h2>
+      <p class="summary" id="gsum"></p>
+      <div class="kpis">
+        <div class="kpi"><b id="k1"></b><span>Ángulo en Pit House</span></div>
+        <div class="kpi"><b id="k2"></b><span>Intensidad FFB Pit House</span></div>
+        <div class="kpi"><b id="k3"></b><span id="k3l"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" data-t="ph" aria-selected="true">Pit House</button>
+    <button role="tab" data-t="game" aria-selected="false">En el juego</button>
+    <button role="tab" data-t="steps" aria-selected="false">Pasos</button>
+  </div>
+  <div id="panel"></div>
+  <div class="bar">
+    <button class="btn" id="copy">Copiar hoja de este juego</button>
+    <button class="btn ghost" id="reset">Borrar mis valores de este juego</button>
+    <span id="toast" role="status"></span>
+  </div>
+</div></section>
+
+<section class="band" style="background:var(--card)"><div class="wrap">
+  <h2>Si algo no se siente bien</h2>
+  <p class="summary">Cambia una sola cosa cada vez, haz el mismo tramo o vuelta y compara.</p>
+  <div class="faq" id="faq" style="margin-top:16px"></div>
+</div></section>
+
+<section class="band"><div class="wrap foot">
+  <p>Base de estos valores: guía oficial de Pit House de MOZA, guía de MOZA para Assetto Corsa, ajustes de RALLY Technical para EA WRC, guía de Reiza para AMS2 y valores de la comunidad para AC Rally y RBR, adaptados por mí a los 3,9 Nm del R3. Los nombres de los ajustes pueden variar ligeramente según tu versión de Pit House.</p>
+  <p><a href="https://mozaracing.com/blogs/blog/moza-pit-house-force-feedback-settings-guide">Guía FFB de Pit House</a> · <a href="https://simracingcockpit.gg/ea-wrc-moza-settings/">EA WRC + Moza</a> · <a href="https://simracingcockpit.gg/acc-moza-settings/">ACC + Moza</a> · <a href="https://simracingcockpit.gg/automobilista-2-wheel-settings/">AMS2</a> · <a href="https://simracingcockpit.gg/dirt-rally-2-wheel-settings/">DiRT Rally 2.0</a></p>
+</div></section>
+</main>
+
+<script>
+{
+const PH_ROWS=[
+ ['s','Ajustes básicos'],
+ ['angle','Ángulo máximo de giro','','720–1080°','Mismo valor que en el juego. Los juegos con soft lock por coche limitan el giro real.'],
+ ['sync','Sincronizado','On','—','Hace que el juego y la base usen el mismo rango.'],
+ ['softlim','Rigidez del límite suave','10','6–10','Tope firme al final del giro; en rally evita pasarte de vuelta.'],
+ ['intens','Intensidad FFB del juego','100%','—','Con el R3 deja siempre 100% y ajusta la fuerza dentro del juego.'],
+ ['torque','Límite de par máximo','100%','—','El R3 no sobra de par: no lo recortes.'],
+ ['road','Sensibilidad de carretera','8','4–10','Más = más textura del firme. Baja si hay ruido.'],
+ ['speed','Velocidad máxima del volante','100%','80–120%','Limita lo rápido que gira solo. Bájala si latiguea en trompos.'],
+ ['spring','Muelle (spring)','0%','—','El juego ya genera la fuerza de autocentrado.'],
+ ['damper','Amortiguador del volante','10%','0–30%','Quita nerviosismo; demasiado lo vuelve pesado y lento.'],
+ ['friction','Fricción del volante','5%','0–30%','Sensación de dirección «con peso».'],
+ ['s','Ajustes avanzados'],
+ ['ninertia','Inercia natural','100%','100–250%','Simula un aro más pesado. Súbela si oscila.'],
+ ['nfriction','Fricción natural','0%','0–10%','Fricción mecánica constante.'],
+ ['sdd','Amortiguación según velocidad','Off','—','Actívala solo si oscila en rectas rápidas.'],
+ ['handsoff','Protección manos fuera','On','—','Seguridad ante latigazos; si notas el FFB apagado o amortiguado, prueba Off con cuidado.'],
+ ['reverse','Invertir FFB','Off','—','Solo si el volante empuja al revés.'],
+ ['curve','Curva FFB base','Lineal','—','Respeta la señal del juego tal cual.']
+];
+const BASE={angle:'900°',sync:'On',softlim:'10',intens:'100%',torque:'100%',road:'8',speed:'100%',spring:'0%',damper:'10%',friction:'5%',ninertia:'100%',nfriction:'0%',sdd:'Off',handsoff:'On',reverse:'Off',curve:'Lineal'};
+const EQ_HZ=['10 Hz','15 Hz','25 Hz','40 Hz','60 Hz','100 Hz'];
+
+const GAMES=[
+{id:'acr',name:'Assetto Corsa Rally',short:'AC Rally',type:'Rally',
+ sum:'FFB con muy buena base física pero todavía en desarrollo. Pit House ya trae preset oficial; úsalo como plantilla, pero con el R3 no hace falta ir a 200 de ganancia.',
+ ph:{damper:'15%',friction:'10%',road:'7',handsoff:'Off'},eq:[110,105,100,100,100,60],
+ k3:['100','Gain en el juego'],
+ game:[['s','Opciones › Controles › Force feedback'],
+  ['Gain','100','90–150','El preset oficial de Moza pide 200; mucha gente lo nota excesivo, con el volante «conduciendo solo».'],
+  ['Minimum force','2','0–4','Un poco ayuda a notar el centro en grava suelta.'],
+  ['Damper','20','10–30','Calma los golpes al trompear o aterrizar saltos.'],
+  ['Steering lock','900°','—','Igual que Pit House.'],
+  ['s','Opcional (si sigue flojo)'],
+  ['Multiplicadores .ini','FFB.OverallMultiplier, FFB.SATMultiplier…','—','Hay usuarios que suben estos valores en el ini de entrada del juego. Haz copia antes y súbelos poco a poco.']],
+ steps:['Abre Pit House › Juegos, busca Assetto Corsa Rally y pulsa Configurar.','Carga el preset oficial de AC Rally y aplica encima los valores de esta hoja.','Guarda el perfil como «R3 · AC Rally».','En el juego, asigna el freno de mano (dispositivo USB aparte) como eje analógico y la palanca en modo secuencial o H.','Calibra pedales y volante y haz un tramo de grava y otro de asfalto antes de tocar nada más.'],
+ tips:'Si pegas un salto y el volante pega un latigazo, sube primero el Damper del juego antes que el de Pit House.'},
+{id:'rbr',name:'Richard Burns Rally (RSF)',short:'RBR · RSF',type:'Rally',
+ sum:'El FFB de RBR es de los más ricos que hay y se ajusta sobre todo en el launcher de RallySimFans. El juego fija el giro real de cada coche si activas el rango por coche.',
+ ph:{damper:'10%',friction:'0%',road:'8'},eq:[100,100,100,100,100,100],
+ k3:['13/20','Fuerza FFB en el juego'],
+ game:[['s','Launcher RSF › Controles / FFB'],
+  ['Grados de giro','900°','—','Mismo valor que Pit House.'],
+  ['Ajustar rango de giro por coche','On','—','Cada coche usa su giro real.'],
+  ['Sensibilidad FFB grava / asfalto / nieve','400 / 400 / 400','220–600','Menos = vibraciones más marcadas; más = señal más limpia para contravolantear.'],
+  ['FFB adaptativo','On','—','Mejora la calidad de la señal; los primeros segundos puede bajar FPS.'],
+  ['Entrada y FFB en paralelo','On','—','Reduce latencia de la señal.'],
+  ['s','Dentro del juego › Options › Controls'],
+  ['Force feedback','On','—',''],
+  ['Strength','13/20 bloques','10–16','Con bases fuertes se usan 7–8; el R3 necesita más.'],
+  ['Zona muerta de dirección','0','—','Cualquier zona muerta mata el centro.'],
+  ['s','Opcional'],
+  ['RBR.ini','ffbBufferCycle=0','—','Ajuste de la comunidad para que el FFB responda antes.']],
+ steps:['En Pit House crea un perfil «R3 · RBR» con los valores de esta hoja (RBR no necesita configuración especial).','Abre el launcher RSF › Controles y selecciona el R3 como volante con FFB.','Asigna freno de mano y palanca en el launcher RSF (RBR lee mejor los ejes desde ahí).','Activa «Ajustar rango por coche» y FFB adaptativo.','Haz un tramo corto y ajusta solo Strength hasta que no sature en curvas rápidas.'],
+ tips:'Si el contravolante se siente lento, sube la sensibilidad FFB (p. ej. a 500) antes que bajar el damper.'},
+{id:'dr2',name:'DiRT Rally 2.0',short:'DiRT Rally 2.0',type:'Rally',
+ sum:'No tiene un control de fuerza general: la autoalineación (SAT) hace de ganancia. Pit House reconoce el juego y puede configurarlo solo.',
+ ph:{damper:'10%',road:'6',ninertia:'120%'},eq:[100,100,100,100,90,50],
+ k3:['75','Self Aligning Torque'],
+ game:[['s','Opciones › Entrada › Dispositivo › Vibración y FFB'],
+  ['Vibración y FFB','On','—',''],
+  ['Self Aligning Torque','75','60–90','Es la fuerza principal; con bases fuertes se usa ~65.'],
+  ['Wheel Friction','15','0–30',''],
+  ['Tyre Friction','30','15–40','Peso a baja velocidad.'],
+  ['Suspension','50','30–65','DR2 mete bastante ruido aquí; no subas mucho.'],
+  ['Collision','40','30–60',''],
+  ['Soft Lock','50','40–100','Tope blando por coche.'],
+  ['Steering Centre Force','On · 120','40–150','Moza recomienda 120–150 con sus bases.'],
+  ['s','Ajustes avanzados'],
+  ['Steering Deadzone','0','—',''],
+  ['Force Feedback Override','Device Driver','—','Según guía de Moza.']],
+ steps:['Pit House (1.2.0.23 o posterior) › DiRT Rally 2.0 › Configurar: así el juego reconoce bien el R3.','Elige el modo Rally y sube la intensidad a 100% (el preset viene a 80).','Guarda como «R3 · DR2».','En el juego, calibra el volante a 900° y asigna freno de mano y palanca.','Ajusta SAT hasta notar el peso sin que se aplane en apoyos largos.'],
+ tips:'Si notas «ruido» sin información en grava, baja Suspension a 40 y la banda de 100 Hz.'},
+{id:'wrc',name:'EA Sports WRC',short:'EA WRC',type:'Rally',
+ sum:'Desde la versión 2.1.5 los Moza (incluido el R3) tienen soporte nativo en PC: ya no hace falta editar device_defines.xml.',
+ ph:{angle:'1080°',damper:'20%',friction:'30%'},eq:[100,100,100,100,100,0],
+ k3:['55','Self Aligning Torque'],
+ game:[['s','Opciones › Controles › Vibración'],
+  ['Vibración y FFB','On','—',''],
+  ['Self Aligning Torque','55','49–62','Hace de ganancia general. Con un R9 se usa ~51; el R3 pide algo más.'],
+  ['Wheel Friction','30','0–40',''],
+  ['Tyre Friction','15','0–30',''],
+  ['Suspension','100','60–110',''],
+  ['Tyre Slip','90','60–190','Clave para notar la pérdida de agarre.'],
+  ['Engine','40','0–60','Vibración de motor; gusto personal.'],
+  ['Collision','100','50–100',''],
+  ['Steering Centre Force','Off','—',''],
+  ['s','Avanzado'],
+  ['Tipo de dispositivo','Volante','—',''],
+  ['Linealidad de dirección','0','—',''],
+  ['Grados de giro','1080°','—','Igual que Pit House.'],
+  ['Soft Lock','On','—','El juego limita el giro de cada coche.']],
+ steps:['Actualiza el juego (2.1.5 o posterior) y Pit House.','En Pit House crea «R3 · WRC» con esta hoja; ajusta el 100 Hz del ecualizador a 0.','En el juego, calibra el volante y asigna freno de mano y palanca.','Ajusta SAT en pasos de 2 hasta notar el peso sin saturar.'],
+ tips:'Si sigue sin FFB, comprueba que no tengas un device_defines.xml antiguo editado a mano: restáuralo verificando archivos en Steam/EA.'},
+{id:'ac',name:'Assetto Corsa',short:'Assetto Corsa',type:'Circuito',
+ sum:'Configura el FFB desde Content Manager (Ajustes › Assetto Corsa › Controles). Ojo: el multiplicador de FFB cambia según el coche.',
+ ph:{speed:'120%',damper:'30%'},eq:[100,100,100,100,100,100],
+ k3:['90%','Gain en el juego'],
+ game:[['s','Content Manager › Controles › Force feedback'],
+  ['Gain','90%','75–100%','Moza usa 60–90 con bases más fuertes; el R3 necesita más.'],
+  ['Filter','0%','—',''],
+  ['Minimum force','3%','0–5%','Rellena la zona muerta de fuerza cerca del centro.'],
+  ['Kerb effect','15%','10–30%',''],
+  ['Road effect','15%','5–20%',''],
+  ['Slip effect','10%','0–15%',''],
+  ['ABS effect','0%','—',''],
+  ['Enhanced understeer','Off','—',''],
+  ['s','Content Manager › extras'],
+  ['Grados de giro','900°','—','Igual que Pit House.'],
+  ['Soft lock','On','—','Cada coche usa su giro real.'],
+  ['Reducción FFB a baja velocidad','10%','0–20%','Evita oscilación en boxes.']],
+ steps:['En Pit House crea «R3 · AC». Moza recomienda amortiguador 60% para R3/R5; aquí parto de 30% para no perder viveza.','En Content Manager, ajusta el FFB y activa soft lock.','Asigna freno de mano (útil con coches de drift y rally de AC) y palanca en H/secuencial.','Prueba un coche GT en Monza y otro de calle: si un coche satura, baja su FFB en el menú del coche.'],
+ tips:'Si oscila en rectas, sube el amortiguador de Pit House hacia el 60% oficial o baja la velocidad máxima.'},
+{id:'acc',name:'Assetto Corsa Competizione',short:'ACC',type:'Circuito',
+ sum:'Funciona con Moza sin configuración especial y trae un preset de controlador para el R3. Normalmente solo tocarás Gain, Minimum Force y Damper.',
+ ph:{angle:'1080°',damper:'10%'},eq:[100,100,100,100,100,100],
+ k3:['75%','Gain en el juego'],
+ game:[['s','Opciones › Controles'],
+  ['Preset','Moza R3','—','Disponible desde la v1.10.3.'],
+  ['Gain','75%','65–85%','Moza propone 50% o menos para bases grandes; súbelo hasta que no se aplane en curvas rápidas.'],
+  ['Minimum force','0%','0–3%',''],
+  ['Damper','2%','0–10%',''],
+  ['Dynamic damping','100%','—',''],
+  ['Road effects','10%','0–15%',''],
+  ['Frequency','400 Hz','—',''],
+  ['Steer lock','1080°','—','Igual que Pit House; ACC aplica el giro de cada coche.'],
+  ['Steer linearity','1.00','—',''],
+  ['Brake gamma','1.00','—','Ajusta el tacto del freno mejor en Pit House (SRP Lite).']],
+ steps:['En Pit House crea «R3 · ACC» con esta hoja.','En ACC carga el preset Moza R3 y ajusta los valores.','Asigna la palanca en modo secuencial (los GT3 son secuenciales).','Ajusta Gain en Eau Rouge o Pouhon: debe pesar, sin quedarse plano.'],
+ tips:'Si notas el volante muerto en apoyos largos, estás saturando: baja Gain de 5 en 5.'},
+{id:'ams2',name:'Automobilista 2',short:'AMS2',type:'Circuito',
+ sum:'FFB muy fiel pero propenso a oscilar en bases pequeñas como el R3. Se corrige con inercia natural en Pit House y Damping en el juego.',
+ ph:{damper:'0%',friction:'20%',ninertia:'150%',handsoff:'Off'},eq:[100,100,100,100,100,100],
+ k3:['80','Gain en el juego'],
+ game:[['s','Opciones › Controles › Force feedback'],
+  ['Perfil','Default+','—','El perfil Custom solo cambia algo si editas el fichero de FFB personalizado.'],
+  ['Gain','80','70–90',''],
+  ['LFB (Low Force Boost)','5','0–10','Un poco ayuda al R3 en el centro; demasiado provoca oscilación.'],
+  ['FX','50','30–60','Efectos de vibraciones y pianos.'],
+  ['Damping','50','30–60','Punto de partida de Moza.'],
+  ['Menu spring','3','<10','Muelle solo en menús.'],
+  ['Giro del volante','900°','—','AMS2 aplica el giro de cada coche.']],
+ steps:['En Pit House crea «R3 · AMS2» con esta hoja (curva y ecualizador lineales).','Pit House › AMS2 › Configurar para la telemetría.','En el juego elige Default+ y ajusta los valores.','Si oscila al soltar el volante, sube la inercia natural de 50 en 50 hasta 250%.'],
+ tips:'Reiza recomienda no complicar Pit House: corrige peso y tacto primero en el juego.'}
+];
+
+const FAQ=[
+['El volante oscila en recta o al soltarlo','Sube el amortiguador o la inercia natural en Pit House; activa la amortiguación según velocidad; baja un poco la velocidad máxima. En AMS2 sube también Damping en el juego.'],
+['En curvas rápidas la fuerza se queda plana (saturación)','Baja la ganancia dentro del juego, no la de Pit House. Con el R3 mantén Pit House al 100% y el par al 100%.'],
+['Lo noto ligero o sin peso','Es normal que el R3 no sea pesado. Sube la ganancia/SAT del juego hasta justo antes de saturar y añade un poco de fricción (5–15%).'],
+['Vibración granulosa o ruido sin información','Baja la banda de 100 Hz del ecualizador y la sensibilidad de carretera; en DR2, baja Suspension.'],
+['El coche gira más o menos que mi volante','Activa Sincronizado y usa el mismo ángulo en Pit House y en el juego; deja que el soft lock del juego haga el resto.'],
+['El freno de mano o la palanca no aparecen','Son dispositivos USB aparte (no pasan por Pit House). Conéctalos directos al PC, compruébalos en «joy.cpl» y asígnalos en cada juego; en RBR desde el launcher RSF.'],
+['El freno de mano es todo/nada','Asígnalo como eje, no como botón. Si tu modelo trae interruptor de modo analógico/digital, ponlo en analógico.'],
+['Pit House no aplica el perfil al abrir el juego','Guarda un perfil por juego con nombre claro y cárgalo antes de arrancar, o asígnalo al juego en Pit House si tu versión lo permite.']
+];
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let store={};try{store=JSON.parse(localStorage.getItem('mozaR3ffb')||'{}')}catch(e){}
+const save=()=>{try{localStorage.setItem('mozaR3ffb',JSON.stringify(store))}catch(e){}};
+let cur=GAMES[0],tab='ph';
+
+const picker=$('#picker');
+picker.innerHTML=['Rally','Circuito'].map(t=>'<div class="grp">'+t+'</div>'+GAMES.filter(g=>g.type===t).map(g=>'<button data-id="'+g.id+'" aria-pressed="false">'+esc(g.short)+'</button>').join('')).join('');
+picker.addEventListener('click',e=>{const b=e.target.closest('button');if(b)location.hash=b.dataset.id});
+
+const phVal=(g,k)=>(g.ph[k]??BASE[k]);
+const mineInput=(key)=>{const v=(store[cur.id]||{})[key]||'';return '<input class="mine" data-k="'+esc(key)+'" value="'+esc(v)+'" aria-label="Mi valor">'};
+
+function phTable(g){
+  const rows=PH_ROWS.map(r=>r[0]==='s'?'<tr><td class="s" colspan="5">'+esc(r[1])+'</td></tr>':
+   '<tr><td>'+esc(r[1])+'</td><td class="v">'+esc(phVal(g,r[0]))+(g.ph[r[0]]&&g.ph[r[0]]!==BASE[r[0]]?' ●':'')+'</td><td class="r">'+esc(r[3])+'</td><td class="w">'+esc(r[4])+'</td><td>'+mineInput('ph_'+r[0])+'</td></tr>').join('');
+  const mx=150;
+  const eq=g.eq.map((v,i)=>'<div><em>'+v+'</em><i style="height:'+(v/mx*100)+'%"></i><span>'+EQ_HZ[i]+'</span></div>').join('');
+  return '<table class="stack"><thead><tr><th>Ajuste</th><th>Valor</th><th>Rango</th><th>Por qué</th><th>Mi valor</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+   '<p class="foot">● = distinto del perfil base que uso para todos los juegos.</p>'+
+   '<h3 style="margin:22px 0 10px">Ecualizador de efectos FFB</h3><div class="eq">'+eq+'</div>'+
+   '<p class="foot">Valores en %. 100 en todas las bandas es neutro; la de 100 Hz recoge la vibración fina y el ruido.</p>';
+}
+function gameTable(g){
+  let n=0;
+  const rows=g.game.map(r=>r[0]==='s'?'<tr><td class="s" colspan="5">'+esc(r[1])+'</td></tr>':
+   '<tr><td>'+esc(r[0])+'</td><td class="v">'+esc(r[1])+'</td><td class="r">'+esc(r[2])+'</td><td class="w">'+esc(r[3])+'</td><td>'+mineInput('g_'+(n++))+'</td></tr>').join('');
+  return '<table class="stack"><thead><tr><th>Ajuste</th><th>Valor</th><th>Rango</th><th>Por qué</th><th>Mi valor</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+   '<div class="note">'+esc(g.tips)+'</div>';
+}
+function stepsList(g){
+  const done=(store[g.id]||{}).steps||[];
+  return '<ol class="steps">'+g.steps.map((s,i)=>'<li class="'+(done[i]?'done':'')+'"><input type="checkbox" data-i="'+i+'" '+(done[i]?'checked':'')+' aria-label="Hecho"><span><b>'+(i+1)+'.</b> '+esc(s)+'</span></li>').join('')+'</ol>';
+}
+function renderPanel(){
+  document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===tab));
+  $('#panel').innerHTML=tab==='ph'?phTable(cur):tab==='game'?gameTable(cur):stepsList(cur);
+}
+function drawArc(deg){
+  const f=Math.min(deg/1080,1),a0=-90-f*180,a1=-90+f*180,r=160,c=180;
+  const p=a=>[c+r*Math.cos(a*Math.PI/180),c+r*Math.sin(a*Math.PI/180)];
+  const [x0,y0]=p(a0),[x1,y1]=p(a1);
+  $('#arc').setAttribute('d',f>=1?'M20 180 A160 160 0 1 1 340 180 A160 160 0 1 1 20 180':'M'+x0+' '+y0+' A'+r+' '+r+' 0 '+(f>.5?1:0)+' 1 '+x1+' '+y1);
+  $('#arcTxt').textContent=deg+'° de 1080°';
+}
+let flip=1;
+function show(id){
+  cur=GAMES.find(g=>g.id===id)||GAMES[0];
+  picker.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===cur.id));
+  $('#kind').textContent=cur.type;$('#gname').textContent=cur.name;$('#gsum').textContent=cur.sum;
+  const ang=phVal(cur,'angle');
+  $('#k1').textContent=ang;$('#k2').textContent=phVal(cur,'intens');$('#k3').textContent=cur.k3[0];$('#k3l').textContent=cur.k3[1];
+  drawArc(parseInt(ang));flip=-flip;$('#rim').style.transform='rotate('+(flip*(cur.type==='Rally'?38:18))+'deg)';
+  renderPanel();
+}
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(b){tab=b.dataset.t;renderPanel()}});
+$('#panel').addEventListener('input',e=>{
+  const t=e.target;store[cur.id]=store[cur.id]||{};
+  if(t.classList.contains('mine')){store[cur.id][t.dataset.k]=t.value;save()}
+});
+$('#panel').addEventListener('change',e=>{
+  const t=e.target;if(t.type!=='checkbox')return;
+  store[cur.id]=store[cur.id]||{};const s=store[cur.id].steps=store[cur.id].steps||[];
+  s[+t.dataset.i]=t.checked;save();t.closest('li').classList.toggle('done',t.checked);
+});
+const toast=m=>{$('#toast').textContent=m;setTimeout(()=>$('#toast').textContent='',2500)};
+$('#reset').addEventListener('click',()=>{delete store[cur.id];save();renderPanel();toast('Valores borrados para '+cur.short)});
+$('#copy').addEventListener('click',async()=>{
+  const m=store[cur.id]||{};let n=0;
+  const ph=PH_ROWS.filter(r=>r[0]!=='s').map(r=>'  '+r[1]+': '+(m['ph_'+r[0]]||phVal(cur,r[0]))).join('\n');
+  const gm=cur.game.filter(r=>r[0]!=='s').map(r=>'  '+r[0]+': '+(m['g_'+(n++)]||r[1])).join('\n');
+  const txt='MOZA R3 · '+cur.name+'\n\nPit House\n'+ph+'\n  Ecualizador '+EQ_HZ.map((h,i)=>h+' '+cur.eq[i]+'%').join(', ')+'\n\nEn el juego\n'+gm;
+  try{await navigator.clipboard.writeText(txt);toast('Hoja copiada')}catch(e){toast('Tu navegador no permite copiar aquí')}
+});
+$('#faq').innerHTML=FAQ.map(f=>'<details><summary>'+esc(f[0])+'</summary><p>'+esc(f[1])+'</p></details>').join('');
+const route=()=>show(location.hash.slice(1));
+addEventListener('hashchange',route);route();
+}
+</script>
+</body>
+</html>
