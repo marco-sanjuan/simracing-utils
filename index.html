@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simracing Utils · Box</title>
+<meta name="description" content="Herramientas de simracing: force feedback del Moza R3 y escuela de setup de rally.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0f12;--panel:#15181d;--panel2:#1b1f25;--line:#2a2f37;--ink:#eceef1;--mute:#98a0ab;
+  --red:#e0291f;--amber:#ffb020;--gravel:#b39867;
+}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 Barlow,system-ui,sans-serif;overflow-x:clip;
+  background-image:radial-gradient(1200px 500px at 85% -10%,rgba(224,41,31,.16),transparent 60%),
+                   radial-gradient(900px 400px at -10% 110%,rgba(255,176,32,.08),transparent 60%);
+  min-height:100vh}
+h1,h2,h3,.cond{font-family:"Barlow Condensed",Barlow,sans-serif;letter-spacing:.02em;margin:0}
+a{color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+/* cabecera */
+.kerb{height:8px;background:repeating-linear-gradient(90deg,var(--red) 0 28px,#f4f4f4 28px 56px)}
+header{padding:48px 0 28px}
+.tag{display:inline-flex;align-items:center;gap:8px;font:600 13px Barlow;text-transform:uppercase;letter-spacing:.14em;color:var(--mute)}
+.tag i{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.35}}
+header h1{font-size:clamp(44px,8vw,88px);font-weight:800;text-transform:uppercase;line-height:.92;margin-top:12px}
+header h1 span{color:var(--red)}
+header p{color:var(--mute);max-width:56ch;margin:14px 0 0;font-size:17px}
+
+/* tarjetas */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;padding:8px 0 40px}
+.card{position:relative;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--panel2),var(--panel));
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;text-decoration:none;
+  transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.card:hover,.card:focus-visible{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 18px 40px -18px var(--accent);outline:none}
+.card .art{height:170px;display:grid;place-items:center;border-bottom:1px solid var(--line);
+  background:radial-gradient(circle at 50% 120%,color-mix(in srgb,var(--accent) 30%,transparent),transparent 70%),#101317}
+.card .art svg{width:150px;height:150px;overflow:visible;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.card:hover .art svg.wheel{transform:rotate(-35deg)}
+.card:hover .art svg.dial .needle{transform:rotate(70deg)}
+.dial .needle{transform-origin:75px 85px;transform:rotate(-60deg);transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.body{padding:20px 22px 22px;display:flex;flex-direction:column;gap:12px;flex:1}
+.folder{font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mute)}
+.folder b{color:var(--accent);font-weight:600}
+.card h2{font-size:32px;font-weight:700;text-transform:uppercase;line-height:1}
+.card p{margin:0;color:var(--mute)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font:600 12px Barlow;padding:4px 10px;border-radius:999px;background:#22262d;border:1px solid var(--line);color:#c9ced6}
+.go{margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px dashed var(--line);
+  font:700 18px "Barlow Condensed";text-transform:uppercase;letter-spacing:.06em;color:var(--accent)}
+.go svg{transition:transform .2s}
+.card:hover .go svg{transform:translateX(6px)}
+.moza{--accent:var(--red)}
+.rally{--accent:var(--amber)}
+
+/* setup */
+.rig{border:1px solid var(--line);border-radius:16px;padding:18px 22px;margin-bottom:40px;background:rgba(21,24,29,.7)}
+.rig h3{font-size:18px;text-transform:uppercase;color:var(--mute);margin-bottom:10px;letter-spacing:.1em}
+.rig ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.rig li{display:flex;flex-direction:column;padding:10px 12px;border-left:3px solid var(--red);background:#12151a;border-radius:0 8px 8px 0}
+.rig li small{color:var(--mute);font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.rig li b{font:600 18px "Barlow Condensed"}
+footer{border-top:1px solid var(--line);padding:18px 0 28px;color:var(--mute);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+footer a{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="kerb" aria-hidden="true"></div>
+
+<header>
+  <div class="wrap">
+    <div class="tag"><i></i> Box abierto</div>
+    <h1>Simracing <span>Utils</span></h1>
+    <p>Mi caja de herramientas para el rig: hojas de force feedback para el volante y una escuela de setup para entender qué hace cada clic del reglaje.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="grid" aria-label="Herramientas">
+
+    <a class="card moza" href="MozaR3/MozaR3-FFB-config.html">
+      <div class="art" aria-hidden="true">
+        <svg class="wheel" viewBox="0 0 150 150">
+          <circle cx="75" cy="75" r="60" fill="none" stroke="#2c3138" stroke-width="14"/>
+          <circle cx="75" cy="75" r="60" fill="none" stroke="#e0291f" stroke-width="14" stroke-dasharray="20 357" stroke-dashoffset="-273"/>
+          <circle cx="75" cy="75" r="18" fill="#1b1f25" stroke="#3a4049" stroke-width="3"/>
+          <path d="M57 75H18M93 75h39M75 93v39" stroke="#3a4049" stroke-width="10" stroke-linecap="round"/>
+          <circle cx="75" cy="75" r="7" fill="#e0291f"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="folder">/<b>MozaR3</b>/MozaR3-FFB-config.html</div>
+        <h2>Moza R3 · FFB</h2>
+        <p>Hojas de reglaje de force feedback juego a juego: Pit House y ajustes de cada simulador, pensados para el R3 con SRP Lite, freno de mano y palanca.</p>
+        <div class="chips"><span>EA WRC</span><span>DiRT Rally 2.0</span><span>RBR · RSF</span><span>AC Rally</span><span>Assetto Corsa</span><span>ACC</span><span>AMS2</span></div>
+        <div class="go">Abrir hoja de FFB
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </div>
+      </div>
+    </a>
+
+    <a class="card rally" href="Rally/setup-configuration.html">
+      <div class="art" aria-hidden="true">
+        <svg class="dial" viewBox="-20 0 190 150">
+          <path d="M20 95a55 55 0 0 1 110 0" fill="none" stroke="#2c3138" stroke-width="12" stroke-linecap="round"/>
+          <path d="M20 95a55 55 0 0 1 32-50" fill="none" stroke="#3d8bfd" stroke-width="12" stroke-linecap="round"/>
+          <path d="M98 45a55 55 0 0 1 32 50" fill="none" stroke="#ff5a4e" stroke-width="12" stroke-linecap="round"/>
+          <path d="M62 38a55 55 0 0 1 26 0" fill="none" stroke="#3ecf8e" stroke-width="12" stroke-linecap="round"/>
+          <g class="needle"><path d="M75 85V40" stroke="#ffb020" stroke-width="5" stroke-linecap="round"/></g>
+          <circle cx="75" cy="85" r="8" fill="#ffb020"/>
+          <text x="22" y="122" text-anchor="middle" fill="#98a0ab" font-family="Barlow Condensed" font-size="12">SUBVIRA</text>
+          <text x="128" y="122" text-anchor="middle" fill="#98a0ab" font-family="Barlow Condensed" font-size="12">SOBREVIRA</text>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="folder">/<b>Rally</b>/setup-configuration.html</div>
+        <h2>Escuela de Setup Rally</h2>
+        <p>Qué hace cada ajuste y cómo cambia la conducción, con simulador de efectos, diagnóstico de problemas y un test para ponerte a prueba.</p>
+        <div class="chips"><span>Fundamentos</span><span>Ajustes</span><span>Simulador</span><span>Diagnóstico</span><span>Test</span><span>RBR</span><span>AC Rally</span></div>
+        <div class="go">Entrar a la escuela
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </div>
+      </div>
+    </a>
+
+  </section>
+
+  <section class="rig" aria-label="Mi rig">
+    <h3>En el rig</h3>
+    <ul>
+      <li><small>Base</small><b>Moza R3 · 3,9 Nm</b></li>
+      <li><small>Pedales</small><b>Moza SRP Lite</b></li>
+      <li><small>Extras</small><b>Freno de mano + palanca</b></li>
+      <li><small>Pantalla</small><b>32" curvo</b></li>
+    </ul>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>simracing-utils · puntos de partida, ajusta de uno en uno</span>
+    <a href="https://github.com/marco-sanjuan/simracing-utils">Ver en GitHub</a>
+  </div>
+</footer>
+</body>
+</html>
