@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escuela de Setup Rally</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1114;--panel:#171a1f;--panel2:#1e2229;--line:#2a2f38;--txt:#e8eaed;--mut:#9aa1ad;
+  --acc:#ffb020;--und:#3d8bfd;--ovr:#ff5a4e;--ok:#3ecf8e;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5}
+h1,h2,h3,.cond{font-family:"Barlow Condensed",sans-serif;letter-spacing:.02em}
+header{padding:18px 16px 8px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#1a1d23,#0f1114)}
+header h1{margin:0;font-size:26px;text-transform:uppercase}
+header h1 span{color:var(--acc)}
+header p{margin:2px 0 0;color:var(--mut);font-size:13px}
+nav{position:sticky;top:0;z-index:5;display:flex;gap:4px;overflow-x:auto;padding:8px 10px;background:rgba(15,17,20,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+nav button{flex:0 0 auto;background:var(--panel);border:1px solid var(--line);color:var(--mut);padding:8px 13px;border-radius:999px;font:600 14px Inter;cursor:pointer}
+nav button.on{background:var(--acc);border-color:var(--acc);color:#111}
+main{max-width:1100px;margin:0 auto;padding:14px}
+section{display:none}section.on{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.muted{color:var(--mut)}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);margin-right:4px}
+.btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:7px 12px;border-radius:8px;font:600 13px Inter;cursor:pointer}
+.btn.acc{background:var(--acc);color:#111;border-color:var(--acc)}
+.btn:active{transform:scale(.98)}
+.seg{display:inline-flex;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{background:none;border:0;color:var(--mut);padding:6px 10px;border-radius:7px;font:600 13px Inter;cursor:pointer}
+.seg button.on{background:var(--line);color:var(--txt)}
+/* Aprender */
+.cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+details.param{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden}
+details.param summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+details.param summary::-webkit-details-marker{display:none}
+details.param summary h3{margin:0;font-size:20px}
+details.param summary .sub{color:var(--mut);font-size:13px}
+details.param[open] summary{border-bottom:1px solid var(--line)}
+.pbody{padding:12px 14px}
+.updown{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.updown>div{background:var(--panel2);border-radius:10px;padding:10px}
+.updown h4{margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.05em}
+.updown ul{margin:0;padding-left:18px}
+.updown li{margin:3px 0;font-size:14px}
+.surf{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.surf div{background:var(--panel2);border-radius:10px;padding:8px 10px;font-size:13.5px}
+.surf b{display:block;font-size:12px;text-transform:uppercase;color:var(--acc);letter-spacing:.05em}
+.game{font-size:13.5px;border-left:3px solid var(--acc);padding:4px 10px;margin:8px 0;background:rgba(255,176,32,.06);border-radius:0 8px 8px 0}
+@media(max-width:640px){.updown,.surf{grid-template-columns:1fr}}
+/* Simulador */
+.simgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:12px;align-items:start}
+@media(max-width:860px){.simgrid{grid-template-columns:1fr}.out{position:static!important}}
+.out{position:sticky;top:60px}
+.ctl{padding:8px 0;border-bottom:1px solid var(--line)}
+.ctl:last-child{border:0}
+.ctl .top{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.ctl label{font-weight:600;font-size:14px}
+.ctl .val{font:700 15px "Barlow Condensed";color:var(--acc);min-width:26px;text-align:right}
+.ctl .ends{display:flex;justify-content:space-between;font-size:11px;color:var(--mut)}
+.ctl.dis{opacity:.35;pointer-events:none}
+.ctl.hl{background:rgba(255,176,32,.08);border-radius:8px;padding:8px 6px}
+input[type=range]{width:100%;accent-color:var(--acc);height:26px}
+.grp h3{margin:4px 0 2px;font-size:17px;color:var(--acc);text-transform:uppercase}
+.gauge{margin:10px 0}
+.gauge .lbl{display:flex;justify-content:space-between;font-size:13px}
+.gauge .lbl b{font-weight:600}
+.track{position:relative;height:16px;border-radius:8px;background:linear-gradient(90deg,var(--ovr) 0%,#5a2f33 30%,#2a3a2e 46%,#2a3a2e 54%,#24365a 70%,var(--und) 100%);margin-top:4px}
+.mk{position:absolute;top:-4px;width:6px;height:24px;border-radius:3px;background:#fff;transform:translateX(-50%);transition:left .25s;box-shadow:0 0 0 2px #000}
+.ghost{position:absolute;top:-2px;width:4px;height:20px;border-radius:2px;background:rgba(255,255,255,.35);transform:translateX(-50%)}
+.ends2{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-top:3px}
+.bar{margin:7px 0}
+.bar .lbl{display:flex;justify-content:space-between;font-size:13px}
+.bt{position:relative;height:9px;background:var(--panel2);border-radius:5px;overflow:hidden;margin-top:3px}
+.bt i{position:absolute;top:0;bottom:0;transition:all .25s}
+.bt .c{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--mut)}
+#explain{min-height:70px}
+#explain h4{margin:0 0 4px;font-family:"Barlow Condensed";font-size:18px}
+#explain ul{margin:4px 0 0;padding-left:18px;font-size:14px}
+svg text{font-family:Inter;font-size:11px}
+/* Diag */
+.sym{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;margin-bottom:12px}
+.sym button{text-align:left;background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:11px 12px;border-radius:10px;font:500 14px Inter;cursor:pointer}
+.sym button.on{border-color:var(--acc);background:rgba(255,176,32,.08)}
+.fix{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.fix:last-child{border:0}
+.fix .n{flex:0 0 26px;height:26px;border-radius:50%;background:var(--acc);color:#111;display:grid;place-items:center;font:700 14px "Barlow Condensed"}
+.fix .t{flex:1}
+.arrow-up{color:var(--ok);font-weight:700}.arrow-dn{color:var(--ovr);font-weight:700}
+/* Quiz */
+.opt{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:11px 12px;border-radius:10px;margin:6px 0;font:500 14px Inter;cursor:pointer}
+.opt.good{border-color:var(--ok);background:rgba(62,207,142,.12)}
+.opt.bad{border-color:var(--ovr);background:rgba(255,90,78,.12)}
+.prog{height:6px;background:var(--panel2);border-radius:3px;overflow:hidden;margin-bottom:10px}
+.prog i{display:block;height:100%;background:var(--acc);transition:width .3s}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--acc);font-family:"Barlow Condensed";font-size:15px;text-transform:uppercase}
+ol.steps li{margin:6px 0}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin-top:4px}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px;background:var(--c)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Escuela de <span>Setup</span> Rally</h1>
+  <p>Entiende qué hace cada ajuste y cómo cambia la conducción · Richard Burns Rally & Assetto Corsa Rally</p>
+</header>
+<nav id="nav">
+  <button data-t="base" class="on">1 · Fundamentos</button>
+  <button data-t="learn">2 · Ajustes</button>
+  <button data-t="sim">3 · Simulador</button>
+  <button data-t="diag">4 · Diagnóstico</button>
+  <button data-t="quiz">5 · Test</button>
+  <button data-t="metodo">6 · Método</button>
+</nav>
+<main>
+
+<!-- FUNDAMENTOS -->
+<section id="base" class="on">
+  <div class="card">
+    <h2 style="margin:0 0 6px">La idea que lo explica todo: el reparto de carga</h2>
+    <p>Un neumático agarra más cuanto más peso tiene encima, <b>pero no de forma proporcional</b>: si duplicas la carga, el agarre crece menos del doble. Por eso, cuando el peso se mueve de un lado a otro del coche, el eje que más peso <i>transfiere</i> pierde agarre total. Casi todos los ajustes de suspensión hacen exactamente eso: deciden <b>qué eje se lleva más transferencia de peso</b> y <b>a qué velocidad</b> ocurre.</p>
+    <p class="muted" style="margin-bottom:0">Regla de oro: lo que <b>endurece</b> un eje (muelle, barra, amortiguador) hace que ese eje reciba más transferencia en curva → ese eje pierde agarre relativo. Endurecer delante = más subviraje. Endurecer detrás = más sobreviraje.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="margin:0 0 6px">Subviraje y sobreviraje</h2>
+    <svg viewBox="0 0 340 170" style="width:100%;max-width:560px;display:block;margin:4px auto">
+      <path d="M30 160 Q30 40 150 40" fill="none" stroke="#555" stroke-width="22" stroke-linecap="round"/>
+      <path d="M30 160 Q30 40 150 40" fill="none" stroke="#888" stroke-dasharray="4 6"/>
+      <path d="M40 130 Q55 70 120 20" fill="none" stroke="#3d8bfd" stroke-width="2.5"/>
+      <text x="120" y="14" fill="#3d8bfd">Subviraje: el morro se va fuera</text>
+      <g transform="translate(250 60)">
+        <path d="M-60 100 Q-60 -20 60 -20" fill="none" stroke="#555" stroke-width="22" stroke-linecap="round"/>
+        <rect x="-50" y="20" width="16" height="30" rx="4" fill="#ff5a4e" transform="rotate(55 -42 35)"/>
+        <text x="-80" y="95" fill="#ff5a4e">Sobreviraje: la cola se va fuera</text>
+      </g>
+    </svg>
+    <p><b style="color:var(--und)">Subviraje</b>: el tren delantero pierde agarre antes que el trasero. Giras el volante y el coche sigue recto. Es estable, pero lento y frustrante en curvas cerradas.</p>
+    <p><b style="color:var(--ovr)">Sobreviraje</b>: el trasero pierde agarre primero. El coche rota más de lo que pides. En rally <b>un poco de sobreviraje controlado es tu amigo</b> (te deja colocar el coche con el gas), pero demasiado te hace trompear.</p>
+  </div>
+
+  <div class="card">
+    <h2 style="margin:0 0 6px">Las tres fases de una curva</h2>
+    <p>Un problema casi nunca es "el coche subvira"; es "subvira <b>en la entrada</b>" o "<b>a la salida con gas</b>". Cada ajuste actúa más en una fase que en otra, así que acostúmbrate a pensar así:</p>
+    <table>
+      <tr><th>Fase</th><th>Qué pasa</th><th>Ajustes que más influyen</th></tr>
+      <tr><td><b>Entrada</b></td><td>Frenas y empiezas a girar. El peso va hacia delante.</td><td>Reparto de frenada, diferencial en retención (decel), convergencia delantera, extensión trasera, compresión delantera</td></tr>
+      <tr><td><b>Apex</b></td><td>Curva estabilizada, carga lateral máxima.</td><td>Barras estabilizadoras, muelles, caída (camber), presiones</td></tr>
+      <tr><td><b>Salida</b></td><td>Aceleras. El peso va hacia atrás.</td><td>Diferenciales en potencia (accel), reparto de par central, compresión trasera, extensión delantera</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2 style="margin:0 0 6px">Por qué el rally es distinto al circuito</h2>
+    <ul>
+      <li><b>La superficie cambia</b>: grava, asfalto roto, nieve, barro… y a veces dentro del mismo tramo. Un setup de rally es un <b>compromiso</b>.</li>
+      <li><b>Los baches importan más que el balance</b>. Un coche que no apoya las ruedas en el suelo no tiene agarre, por bien equilibrado que esté. En grava, "más blando y más alto" suele ser más rápido que "más duro y más bajo".</li>
+      <li><b>Los saltos y cambios de rasante</b> exigen recorrido de suspensión y una extensión bien controlada para aterrizar recto.</li>
+      <li><b>Rotación con freno de mano y transferencias</b> (Scandinavian flick): el coche tiene que dejarse rotar a baja velocidad sin ser un caos a alta.</li>
+      <li><b>No ves la carretera dos veces</b>. La confianza y la previsibilidad valen más que la última décima.</li>
+    </ul>
+  </div>
+  <div class="card" style="text-align:center">
+    <p style="margin:0 0 8px">Siguiente paso: revisa cada ajuste en detalle y luego juega con el simulador.</p>
+    <button class="btn acc" onclick="go('learn')">Ver los ajustes →</button>
+  </div>
+</section>
+
+<!-- APRENDER -->
+<section id="learn">
+  <div class="cats" id="cats"></div>
+  <div id="plist"></div>
+</section>
+
+<!-- SIMULADOR -->
+<section id="sim">
+  <div class="card" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
+    <div>
+      <div class="muted" style="font-size:12px">Tracción</div>
+      <div class="seg" id="drv"><button data-v="4wd" class="on">4x4</button><button data-v="fwd">Delantera</button><button data-v="rwd">Trasera</button></div>
+    </div>
+    <div>
+      <div class="muted" style="font-size:12px">Superficie</div>
+      <div class="seg" id="surf"><button data-v="grava" class="on">Grava</button><button data-v="asfalto">Asfalto</button><button data-v="nieve">Nieve</button></div>
+    </div>
+    <button class="btn" id="reset">↺ Setup base</button>
+  </div>
+
+  <div class="simgrid">
+    <div class="card" id="ctls"></div>
+    <div class="out">
+      <div class="card">
+        <svg id="corner" viewBox="0 0 320 210" style="width:100%;display:block"></svg>
+        <div class="legend"><span style="--c:#888">Trazada ideal</span><span style="--c:var(--acc)">Trazada del coche</span><span style="--c:rgba(255,255,255,.35)">Marca gris = setup base</span></div>
+        <div id="gauges"></div>
+        <div class="ends2"><span>◀ Sobreviraje</span><span>Neutro</span><span>Subviraje ▶</span></div>
+      </div>
+      <div class="card" id="bars"></div>
+      <div class="card" id="explain"><span class="muted">Mueve cualquier ajuste y aquí verás qué acabas de cambiar y por qué el coche reacciona así.</span></div>
+    </div>
+  </div>
+  <p class="muted" style="font-size:12.5px">El simulador es un modelo didáctico: muestra la <b>dirección</b> y la importancia relativa de cada cambio según la teoría de setup, no valores exactos de ningún juego. En cada coche las magnitudes cambian; las tendencias se mantienen.</p>
+</section>
+
+<!-- DIAGNÓSTICO -->
+<section id="diag">
+  <div class="card"><b>¿Qué le pasa al coche?</b> <span class="muted">Elige el síntoma. Te doy los cambios en orden de prioridad: prueba el primero, y solo si no basta, pasa al siguiente.</span></div>
+  <div class="sym" id="syms"></div>
+  <div class="card" id="fixes"><span class="muted">Selecciona un síntoma.</span></div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz">
+  <div class="card" id="qbox"></div>
+</section>
+
+<!-- MÉTODO -->
+<section id="metodo">
+  <div class="card">
+    <h2 style="margin:0 0 6px">Cómo trabajar un setup (método de ingeniero)</h2>
+    <ol class="steps">
+      <li><b>Empieza por el setup por defecto</b> del coche para esa superficie. Haz 2–3 pasadas del mismo tramo corto para tener una referencia de tiempo y sensaciones.</li>
+      <li><b>Describe el problema con precisión</b>: ¿qué fase de la curva? ¿lenta o rápida? ¿con baches? ¿con gas o sin gas? Usa la pestaña Diagnóstico.</li>
+      <li><b>Un cambio cada vez</b>, y claramente perceptible (2–3 clics, no 1). Si cambias tres cosas a la vez no sabrás cuál ha funcionado.</li>
+      <li><b>Prueba en el mismo tramo</b> y compara sensaciones, no solo el crono: ¿confías más en el coche?</li>
+      <li><b>Si empeora, vuelve atrás</b> y prueba la opción siguiente de la lista.</li>
+      <li><b>Apunta todo</b>: coche, tramo, superficie, cambio, resultado. Una libreta de setups vale oro.</li>
+      <li><b>Orden recomendado</b>: 1) presiones y altura, 2) muelles y barras (balance), 3) amortiguadores (baches y transiciones), 4) diferenciales (gas y frenada), 5) geometría fina, 6) desarrollos.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2 style="margin:0 0 6px">Punto de partida por superficie</h2>
+    <table>
+      <tr><th>Ajuste</th><th>Grava</th><th>Asfalto</th><th>Nieve / hielo</th></tr>
+      <tr><td>Altura</td><td>Alta</td><td>Baja</td><td>Media-alta (muros de nieve, roderas)</td></tr>
+      <tr><td>Muelles</td><td>Blandos</td><td>Duros</td><td>Blandos-medios</td></tr>
+      <tr><td>Amortiguadores</td><td>Compresión blanda, extensión media</td><td>Más firmes</td><td>Blandos</td></tr>
+      <tr><td>Barras</td><td>Blandas</td><td>Más duras</td><td>Blandas</td></tr>
+      <tr><td>Caída (camber)</td><td>Poca</td><td>Más negativa</td><td>Poca</td></tr>
+      <tr><td>Diferenciales</td><td>Bloqueo medio-alto</td><td>Bloqueo más bajo delante</td><td>Bloqueo alto (las ruedas apenas tienen agarre)</td></tr>
+      <tr><td>Reparto de frenada</td><td>Algo más atrás que en asfalto</td><td>Más adelante</td><td>Más atrás, para ayudar a rotar</td></tr>
+      <tr><td>Desarrollos</td><td>Medios</td><td>Largos en tramos rápidos</td><td>Cortos</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2 style="margin:0 0 6px">Notas sobre tus juegos</h2>
+    <div class="game"><b>Richard Burns Rally (RSF / física NGP)</b><br>Tienes setups distintos por superficie y los ajustes son muy completos: muelles, amortiguadores con compresión y extensión separadas (y en muchos coches lenta/rápida), altura, barras, geometría, diferenciales (en 4x4 también el central y su reparto), reparto de frenada, freno de mano y desarrollos. Los nombres y rangos cambian de un coche a otro, pero cada ajuste hace lo que explica esta app. RBR castiga mucho un coche demasiado duro en grava rota: si el coche "salta" y no tracciona, ablanda antes de tocar nada más.</div>
+    <div class="game"><b>Assetto Corsa Rally</b><br>Usa la base física de Assetto Corsa adaptada a tramos. Los diferenciales delantero, central y trasero se ajustan por separado (bloqueo en potencia y en retención), además de suspensión, geometría, frenos y desarrollos. Como está en desarrollo, las opciones disponibles pueden cambiar con las actualizaciones; revisa el menú de cada coche, porque no todos ofrecen los mismos ajustes.</div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin:0 0 6px">Glosario rápido</h2>
+    <table>
+      <tr><td><b>Bump / compresión</b></td><td>Resistencia del amortiguador al comprimirse (la rueda sube).</td></tr>
+      <tr><td><b>Rebound / extensión</b></td><td>Resistencia al estirarse (la rueda baja / la carrocería sube).</td></tr>
+      <tr><td><b>Lento / rápido</b></td><td>Lento = movimientos de carrocería (frenar, girar). Rápido = golpes de la rueda (baches, piedras).</td></tr>
+      <tr><td><b>Camber / caída</b></td><td>Inclinación de la rueda vista de frente. Negativa = parte de arriba hacia dentro.</td></tr>
+      <tr><td><b>Toe / convergencia</b></td><td>Ruedas mirando hacia dentro (toe-in, convergencia) o hacia fuera (toe-out, divergencia) vistas desde arriba.</td></tr>
+      <tr><td><b>Preload / precarga</b></td><td>Bloqueo mínimo del diferencial, siempre activo, incluso sin gas ni freno.</td></tr>
+      <tr><td><b>Power / accel</b></td><td>Bloqueo del diferencial al acelerar.</td></tr>
+      <tr><td><b>Coast / decel / retención</b></td><td>Bloqueo del diferencial al soltar gas o frenar.</td></tr>
+      <tr><td><b>Packers / topes</b></td><td>Limitan el recorrido de compresión para que no toque fondo.</td></tr>
+    </table>
+  </div>
+</section>
+</main>
+
+<script>
+/* ===================== DATOS ===================== */
+const CATS = {susp:"Suspensión",amort:"Amortiguadores",geo:"Geometría",neum:"Neumáticos",frenos:"Frenos",dif:"Diferenciales",trans:"Transmisión"};
+const OUTS = {entrada:"Entrada",apex:"Apex",salida:"Salida (gas)"};
+const BARS = {traccion:"Tracción",frenada:"Estabilidad en frenada",agilidad:"Agilidad / respuesta",absorcion:"Absorción de baches",estabilidad:"Estabilidad a alta velocidad y saltos",aceleracion:"Aceleración",punta:"Velocidad punta"};
+
+const P = [
+ {id:"muelleDel",cat:"susp",name:"Muelles delanteros",lo:"Blandos",hi:"Duros",
+  what:"Los muelles sostienen el peso del coche y determinan cuánto se hunde la carrocería al frenar, acelerar y girar. Un muelle más duro hace que ese eje reciba más transferencia de carga en curva.",
+  up:["Más subviraje (el tren delantero se carga más y pierde agarre relativo)","Respuesta más directa al volante","Peor en baches: la rueda rebota y pierde contacto","Menos cabeceo al frenar"],
+  down:["Más agarre delantero y rotación","Mejor absorción de irregularidades","Más cabeceo y balanceo, el coche se siente más 'lento' en los cambios de apoyo"],
+  surf:{grava:"Blandos: el contacto con el suelo es lo primero.",asfalto:"Más duros para respuesta y plataforma estable.",nieve:"Blandos-medios: ayuda a que el peso se transfiera y 'clave' la rueda."},
+  rbr:"En RBR un tren delantero demasiado duro en grava rota provoca un subviraje 'saltarín' muy típico.",
+  fx:{entrada:.4,apex:.5,salida:.3,agilidad:.3,absorcion:-.5,traccion:-.1}},
+ {id:"muelleTras",cat:"susp",name:"Muelles traseros",lo:"Blandos",hi:"Duros",
+  what:"Igual que los delanteros, pero en el eje trasero. Endurecer detrás desplaza el balance hacia el sobreviraje.",
+  up:["Más sobreviraje en todas las fases","Menos tracción a la salida (la rueda trasera no copia el terreno)","Más rápido en los cambios de apoyo"],
+  down:["Más estabilidad y tracción trasera","El coche 'se sienta' al acelerar y empuja mejor en grava","Puede volverse perezoso al rotar"],
+  surf:{grava:"Blandos para traccionar.",asfalto:"Medios-duros; ajusta el balance con las barras.",nieve:"Blandos: la tracción es escasa."},
+  fx:{entrada:-.4,apex:-.5,salida:-.4,traccion:-.4,agilidad:.3,absorcion:-.5}},
+ {id:"altura",cat:"susp",name:"Altura de la carrocería",lo:"Baja",hi:"Alta",
+  what:"Distancia del chasis al suelo. Más alta = más recorrido antes de tocar fondo, pero centro de gravedad más alto y más balanceo.",
+  up:["Más recorrido de suspensión: no toca fondo en saltos y baches","Aterrizajes más limpios","Más balanceo y transferencia de peso: respuesta más lenta","Centro de gravedad alto: algo menos de agarre en curva rápida"],
+  down:["Coche más ágil y con menos balanceo","Ideal en asfalto liso","Riesgo de tocar fondo: golpes, pérdida total de agarre y aterrizajes peligrosos"],
+  surf:{grava:"Alta. Tocar fondo es lo peor que te puede pasar.",asfalto:"Baja, siempre que no toques en los cortes y pianos.",nieve:"Media-alta por roderas y nieve acumulada."},
+  rbr:"Si en la repetición ves la carrocería golpear el suelo tras un salto, sube altura o endurece los topes antes de nada.",
+  fx:{apex:.1,agilidad:-.4,absorcion:.7,estabilidad:.5,frenada:-.1}},
+ {id:"barraDel",cat:"susp",name:"Barra estabilizadora delantera",lo:"Blanda",hi:"Dura",
+  what:"Une las dos ruedas del mismo eje y solo actúa cuando el coche balancea (en curva). Es la herramienta más limpia para cambiar el balance a mitad de curva sin afectar tanto a la absorción en línea recta.",
+  up:["Más subviraje, sobre todo en el apex","Menos balanceo, respuesta más rápida","Peor en baches de un solo lado (la barra transmite el golpe a la otra rueda)"],
+  down:["Más agarre delantero en curva","Mejor en terreno irregular","Más balanceo"],
+  surf:{grava:"Blanda: cada rueda trabaja de forma más independiente.",asfalto:"Más dura para que el coche responda rápido.",nieve:"Blanda."},
+  fx:{entrada:.4,apex:.6,salida:.4,agilidad:.3,absorcion:-.2}},
+ {id:"barraTras",cat:"susp",name:"Barra estabilizadora trasera",lo:"Blanda",hi:"Dura",
+  what:"La barra trasera. Endurecerla es la forma más típica de 'hacer girar' un coche que subvira en el apex.",
+  up:["Más sobreviraje en el apex y a la salida","Coche más rotador y vivo","Menos tracción trasera en curva"],
+  down:["Más estabilidad trasera","Mejor tracción saliendo de curvas","Más tendencia al subviraje"],
+  surf:{grava:"Blanda-media.",asfalto:"Ajusta para equilibrar; en tracción delantera se suele llevar dura para que el coche rote.",nieve:"Blanda."},
+  fx:{entrada:-.4,apex:-.6,salida:-.5,traccion:-.3,agilidad:.3,absorcion:-.2}},
+ {id:"compDel",cat:"amort",name:"Compresión delantera (bump)",lo:"Blanda",hi:"Dura",
+  what:"Controla la velocidad a la que se comprime el amortiguador delantero: al frenar (el morro baja) y al pasar por un bache (la rueda sube). Afecta a los transitorios, no al balance estable.",
+  up:["El morro baja más despacio al frenar: plataforma más estable","Más subviraje al inicio del giro","Peor absorción de golpes: la rueda 'salta'"],
+  down:["La rueda copia mejor el terreno","El morro se hunde más rápido al frenar: más agarre delantero en la entrada","Riesgo de tocar fondo con frenadas fuertes y saltos"],
+  surf:{grava:"Blanda (especialmente la rápida, para piedras y baches).",asfalto:"Más firme.",nieve:"Blanda."},
+  rbr:"En RBR muchos coches separan compresión lenta y rápida: la lenta gobierna los movimientos de carrocería y la rápida los golpes.",
+  fx:{entrada:.4,frenada:.2,absorcion:-.5,agilidad:.3}},
+ {id:"compTras",cat:"amort",name:"Compresión trasera (bump)",lo:"Blanda",hi:"Dura",
+  what:"Velocidad de compresión del eje trasero. Es clave al acelerar, cuando el peso va hacia atrás y la trasera se 'sienta'.",
+  up:["La trasera se hunde más despacio al acelerar: menos tracción y más sobreviraje con gas","Rebota más en baches"],
+  down:["Mejor tracción a la salida","Mejor en grava rota","Si es muy blanda, la trasera se hunde mucho y el coche se vuelve perezoso"],
+  surf:{grava:"Blanda.",asfalto:"Media.",nieve:"Blanda."},
+  fx:{salida:-.4,traccion:-.3,absorcion:-.5,estabilidad:-.2}},
+ {id:"extDel",cat:"amort",name:"Extensión delantera (rebound)",lo:"Blanda",hi:"Dura",
+  what:"Controla la velocidad a la que el amortiguador delantero se estira: cuando sueltas el freno y aceleras (el morro sube) y después de un bache o salto.",
+  up:["El morro sube más despacio al acelerar: mantiene carga delante, menos subviraje a la salida","Controla el rebote después de saltos","Si es excesiva, la rueda no vuelve a tiempo al suelo tras un bache (se queda 'colgada')"],
+  down:["La rueda vuelve rápido al suelo","Más cabeceo y oscilación después de los saltos","Más subviraje con gas"],
+  surf:{grava:"Media: suficiente para controlar rebotes sin que la rueda se quede colgada.",asfalto:"Media-alta.",nieve:"Media-baja."},
+  fx:{salida:-.3,absorcion:-.3,agilidad:.2,estabilidad:.2}},
+ {id:"extTras",cat:"amort",name:"Extensión trasera (rebound)",lo:"Blanda",hi:"Dura",
+  what:"Controla la velocidad a la que sube la trasera, sobre todo al frenar (el peso va adelante y la trasera se 'levanta') y tras los saltos.",
+  up:["La trasera se descarga más rápido en términos de giro: más rotación en la entrada","Mejor control del cabeceo en saltos (el coche aterriza más nivelado)","Si es excesiva, el culo se vuelve nervioso al frenar"],
+  down:["Entrada más estable","La rueda trasera vuelve antes al suelo","Rebota más tras saltos"],
+  surf:{grava:"Media.",asfalto:"Media-alta.",nieve:"Media-baja."},
+  fx:{entrada:-.4,frenada:-.2,absorcion:-.3,estabilidad:.3}},
+ {id:"camberDel",cat:"geo",name:"Caída delantera (camber)",lo:"Poca",hi:"Muy negativa",
+  what:"Inclinación de la rueda delantera vista de frente. En curva la carrocería balancea y la rueda exterior se inclina hacia fuera; un poco de caída negativa compensa eso para que la goma apoye plana.",
+  up:["Más agarre delantero en curva (sobre todo en asfalto)","Menos agarre al frenar en recta (la goma apoya menos)","Desgaste interior"],
+  down:["Mejor frenada y tracción en recta","Menos agarre lateral delantero","En grava y nieve el efecto es pequeño"],
+  surf:{grava:"Poca: el suelo suelto reduce el beneficio.",asfalto:"Más negativa: aquí sí se nota.",nieve:"Poca."},
+  sf:{grava:.5,asfalto:1.3,nieve:.3},
+  fx:{entrada:-.2,apex:-.5,frenada:-.3,estabilidad:-.1}},
+ {id:"camberTras",cat:"geo",name:"Caída trasera (camber)",lo:"Poca",hi:"Muy negativa",
+  what:"Lo mismo en el eje trasero. Más caída detrás = más agarre lateral trasero = el coche se vuelve más estable (y subvirador).",
+  up:["Más agarre lateral trasero: menos sobreviraje","Algo menos de tracción en recta"],
+  down:["Más rotación","Más tracción en línea recta"],
+  surf:{grava:"Poca.",asfalto:"Moderada.",nieve:"Poca."},
+  sf:{grava:.5,asfalto:1.3,nieve:.3},
+  fx:{apex:.3,salida:.3,traccion:-.2}},
+ {id:"convDel",cat:"geo",name:"Convergencia delantera (toe)",lo:"Toe-in",hi:"Toe-out",
+  what:"Ángulo de las ruedas delanteras vistas desde arriba. Toe-out (divergencia, puntas hacia fuera) hace que el coche 'quiera' girar; toe-in hace que vaya más recto.",
+  up:["Hacia toe-out: entrada a curva mucho más rápida y viva","Menos estabilidad en recta: el coche 'busca' la carretera","Más arrastre"],
+  down:["Hacia toe-in: muy estable en recta y en frenada","Perezoso al empezar a girar"],
+  surf:{grava:"Ligero toe-out ayuda a iniciar la rotación.",asfalto:"Casi neutro o ligero toe-out.",nieve:"Toe-out ligero: cuesta mucho iniciar el giro."},
+  fx:{entrada:-.5,agilidad:.6,estabilidad:-.5}},
+ {id:"convTras",cat:"geo",name:"Convergencia trasera (toe)",lo:"Toe-out",hi:"Toe-in",
+  what:"En el eje trasero casi siempre se usa toe-in (convergencia). Es un estabilizador potente: más toe-in = trasera más 'clavada'.",
+  up:["Más toe-in: mucha más estabilidad, sobre todo a alta velocidad y en saltos","Menos sobreviraje con gas","Coche más perezoso al rotar"],
+  down:["Más vivo y rotador","Nervioso en rectas rápidas","Toe-out detrás suele ser peligroso"],
+  surf:{grava:"Toe-in moderado.",asfalto:"Toe-in ligero.",nieve:"Toe-in moderado para estabilidad."},
+  fx:{entrada:.3,salida:.4,estabilidad:.6,agilidad:-.3,traccion:.1}},
+ {id:"presDel",cat:"neum",name:"Presión delantera",lo:"Baja",hi:"Alta",
+  what:"Más presión = neumático más rígido: responde antes pero tiene una huella más pequeña y peor adaptación al terreno.",
+  up:["Respuesta más rápida al volante","Menos agarre delantero (más subviraje)","Peor en baches"],
+  down:["Más huella y agarre, sobre todo en suelto","Respuesta más blanda y gomosa","Demasiado baja: la goma se deforma y el coche se vuelve impreciso"],
+  surf:{grava:"Más baja que en asfalto.",asfalto:"Media-alta.",nieve:"Baja-media (depende del neumático de clavos)."},
+  fx:{entrada:.3,apex:.4,agilidad:.3,absorcion:-.3}},
+ {id:"presTras",cat:"neum",name:"Presión trasera",lo:"Baja",hi:"Alta",
+  what:"Igual en el eje trasero. Un truco rápido para ajustar balance sin tocar la suspensión.",
+  up:["Menos agarre trasero: más sobreviraje","Menos tracción"],
+  down:["Más agarre y tracción traseros","Coche más estable"],
+  surf:{grava:"Baja.",asfalto:"Media.",nieve:"Baja-media."},
+  fx:{apex:-.4,salida:-.4,traccion:-.3,agilidad:.2,absorcion:-.3}},
+ {id:"reparto",cat:"frenos",name:"Reparto de frenada",lo:"Más atrás",hi:"Más delante",
+  what:"Porcentaje de fuerza de frenado que va al eje delantero. Al frenar, el peso va hacia delante, por eso los coches frenan más delante (normalmente 55–70 %).",
+  up:["Más delante: frenada muy estable, el coche va recto","Más subviraje en la entrada (las delanteras se saturan frenando y girando)","Riesgo de bloquear delante"],
+  down:["Más atrás: el coche rota al frenar y entrar en curva (muy útil en rally)","Riesgo de bloquear detrás y trompear"],
+  surf:{grava:"Algo más atrás que en asfalto para colocar el coche frenando.",asfalto:"Más delante.",nieve:"Más atrás: ayuda mucho a iniciar el giro."},
+  fx:{entrada:.6,frenada:.6,agilidad:-.2}},
+ {id:"difDelAcc",cat:"dif",name:"Diferencial delantero (bloqueo con gas)",lo:"Abierto",hi:"Bloqueado",drv:["4wd","fwd"],
+  what:"Un diferencial abierto deja girar las ruedas a distinta velocidad (necesario en curva) pero manda la fuerza a la rueda con menos agarre. Bloquearlo reparte la fuerza a ambas ruedas, mejorando tracción pero 'empujando' el coche recto.",
+  up:["Más tracción delantera saliendo de curva","Más subviraje con gas: el eje delantero 'tira' recto","Volante más pesado y con más tirones"],
+  down:["Coche más fácil de girar con gas","La rueda interior patina en salidas lentas"],
+  surf:{grava:"Medio-bajo en 4x4; medio-alto en tracción delantera.",asfalto:"Bajo.",nieve:"Medio-alto."},
+  acr:"En Assetto Corsa Rally se ajustan por separado el bloqueo en potencia y en retención de cada diferencial.",
+  fx:{salida:.6,traccion:.4,agilidad:-.2}},
+ {id:"difTrasAcc",cat:"dif",name:"Diferencial trasero (bloqueo con gas)",lo:"Abierto",hi:"Bloqueado",drv:["4wd","rwd"],
+  what:"Bloqueo del diferencial trasero cuando aceleras. Más bloqueo = las dos ruedas traseras empujan juntas: más tracción, pero también la trasera se suelta 'de golpe' y el coche tiende a cruzarse con gas.",
+  up:["Más tracción trasera en línea recta","Más sobreviraje de potencia: el coche se cruza con gas (útil para derrapar)","Menos progresivo al límite"],
+  down:["Más estable con gas","La rueda interior patina (pierde tracción en horquillas)"],
+  surf:{grava:"Medio-alto.",asfalto:"Medio.",nieve:"Alto."},
+  fx:{salida:-.5,traccion:.5}},
+ {id:"difTrasRet",cat:"dif",name:"Diferencial trasero (retención / decel)",lo:"Abierto",hi:"Bloqueado",drv:["4wd","rwd"],
+  what:"Bloqueo cuando levantas el pie del gas o frenas. Más bloqueo mantiene las ruedas traseras unidas, lo que estabiliza el coche pero le cuesta más rotar en la entrada.",
+  up:["Entrada muy estable","Más subviraje al entrar sin gas","Cuesta más rotar con el freno de mano"],
+  down:["El coche rota con facilidad al levantar el pie (lift-off)","Más nervioso en frenadas fuertes"],
+  surf:{grava:"Bajo-medio para que el coche rote.",asfalto:"Medio.",nieve:"Bajo-medio."},
+  fx:{entrada:.5,frenada:.4,agilidad:-.3}},
+ {id:"difCentral",cat:"dif",name:"Reparto de par central",lo:"Más delante",hi:"Más detrás",drv:["4wd"],
+  what:"En un 4x4, cuánto par va a cada eje (p. ej. 40/60). Más par atrás = comportamiento más parecido a un tracción trasera. El bloqueo del central (si existe) hace que ambos ejes giren igual: más tracción pero más subviraje.",
+  up:["Más par atrás: el coche rota con gas y sale cruzado","Menos estable a alta velocidad","Algo menos de tracción pura en suelto"],
+  down:["Más par delante: muy estable, tira del coche hacia la salida","Más subviraje con gas"],
+  surf:{grava:"Ligeramente atrás (≈ 40/60).",asfalto:"Más neutro (≈ 45/55–50/50).",nieve:"Ligeramente atrás."},
+  fx:{apex:-.2,salida:-.6,traccion:-.2,agilidad:.3,estabilidad:-.2}},
+ {id:"desarrollo",cat:"trans",name:"Desarrollo final (grupo)",lo:"Largo",hi:"Corto",
+  what:"Relación final de la caja de cambios. Corto = más aceleración en cada marcha pero menos velocidad máxima.",
+  up:["Más aceleración y respuesta en tramos lentos y reviros","Llegas antes al corte de inyección en recta","Más patinamiento en suelto"],
+  down:["Más velocidad punta","Menos aceleración, el coche 'se ahoga' en curvas lentas"],
+  surf:{grava:"Medio, adaptado al tramo.",asfalto:"Largo en tramos rápidos.",nieve:"Corto-medio; una marcha más larga ayuda a no patinar al salir."},
+  fx:{aceleracion:.7,punta:-.7,traccion:-.2}}
+];
+const PI = Object.fromEntries(P.map(p=>[p.id,p]));
+
+const SYMS = [
+ {t:"Subvira al entrar en curva (no gira al empezar)",f:[["reparto",-1,"Menos freno delante libera agarre para girar."],["difTrasRet",-1,"Menos bloqueo en retención deja rotar la trasera al soltar gas."],["convDel",1,"Un poco de toe-out ayuda a iniciar el giro."],["extTras",1,"Más extensión trasera: el coche rota más mientras frenas."],["compDel",-1,"El morro se hunde antes y carga la rueda delantera."]]},
+ {t:"Sobrevira al entrar / inestable frenando",f:[["reparto",1,"Más freno delante estabiliza la frenada."],["difTrasRet",1,"Más bloqueo en retención mantiene la trasera en línea."],["convTras",1,"Más toe-in trasero da estabilidad."],["extTras",-1,"La trasera se descarga con más suavidad."]]},
+ {t:"Subvira en el apex (curva estabilizada)",f:[["barraDel",-1,"Barra delantera más blanda: más agarre delantero."],["barraTras",1,"Barra trasera más dura: el coche rota."],["muelleDel",-1,"Muelles delanteros más blandos."],["camberDel",1,"Más caída negativa delante (sobre todo en asfalto)."],["presDel",-1,"Bajar presión delantera."]]},
+ {t:"Sobrevira en el apex",f:[["barraTras",-1,"Barra trasera más blanda."],["barraDel",1,"Barra delantera más dura."],["muelleTras",-1,"Muelles traseros más blandos."],["presTras",-1,"Bajar presión trasera."]]},
+ {t:"Subvira a la salida con gas",f:[["difDelAcc",-1,"Menos bloqueo delante: el eje delantero deja de 'tirar recto'."],["difCentral",1,"Más par al eje trasero."],["extDel",1,"El morro sube más despacio y conserva carga."],["barraTras",1,"Barra trasera más dura."]]},
+ {t:"Sobrevira a la salida / se cruza con gas",f:[["difTrasAcc",-1,"Menos bloqueo trasero en potencia: más progresivo."],["difCentral",-1,"Más par delante."],["convTras",1,"Más toe-in trasero."],["muelleTras",-1,"Trasera más blanda para que se 'siente' y tracciona."],["barraTras",-1,"Barra trasera más blanda."]]},
+ {t:"Falta tracción / patina mucho al salir",f:[["muelleTras",-1,"Trasera más blanda para que copie el terreno."],["compTras",-1,"Compresión trasera más blanda."],["presTras",-1,"Bajar presión trasera."],["difTrasAcc",1,"Más bloqueo trasero en potencia."],["desarrollo",-1,"Desarrollo algo más largo reduce el patinamiento."]]},
+ {t:"Rebota y pierde contacto en baches",f:[["compDel",-1,"Compresión delantera más blanda."],["compTras",-1,"Compresión trasera más blanda."],["muelleDel",-1,"Muelles más blandos."],["muelleTras",-1,"Muelles más blandos."],["altura",1,"Más altura: más recorrido útil."]]},
+ {t:"Toca fondo / aterriza mal tras saltos",f:[["altura",1,"Lo primero: más altura."],["extTras",1,"Más extensión trasera para que el coche aterrice nivelado."],["muelleDel",1,"Muelles algo más duros si ya vas alto."],["compDel",1,"Algo más de compresión para frenar el golpe."]]},
+ {t:"Nervioso en rectas rápidas",f:[["convTras",1,"Más toe-in trasero."],["convDel",-1,"Menos toe-out delante."],["difCentral",-1,"Más par delante."],["altura",-1,"Algo más bajo si el tramo lo permite."]]},
+ {t:"No rota en horquillas (ni con freno de mano)",f:[["difTrasRet",-1,"Menos bloqueo en retención."],["difCentral",1,"Más par atrás."],["reparto",-1,"Frenada más atrás."],["convDel",1,"Más toe-out delante."]]},
+ {t:"Le falta empuje / se queda sin marchas",f:[["desarrollo",1,"Desarrollo más corto si le falta aceleración."],["desarrollo",-1,"Más largo si llegas al corte en las rectas."]]}
+];
+
+const QUIZ = [
+ {q:"Tu coche subvira a mitad de curva en asfalto. ¿Cuál es el cambio más directo?",o:["Endurecer la barra delantera","Ablandar la barra delantera o endurecer la trasera","Bajar el reparto de par atrás","Subir la altura"],a:1,e:"La fase estable (apex) depende sobre todo de barras y muelles. Ablandar delante o endurecer detrás desplaza la transferencia de carga hacia atrás y da agarre al morro."},
+ {q:"En un tramo de grava muy roto, el coche 'salta' y no tracciona. ¿Qué tocas primero?",o:["Ablandar compresión y muelles, y subir altura","Endurecer las barras","Más caída negativa","Desarrollo más corto"],a:0,e:"En grava rota lo primero es que las ruedas toquen el suelo. Suspensión más blanda y más altura = más contacto = más agarre."},
+ {q:"¿Qué hace el toe-out (divergencia) en el eje delantero?",o:["Da más estabilidad en recta","Hace que el coche entre en curva más rápido, pero lo vuelve más nervioso en recta","Mejora la tracción","No tiene efecto en rally"],a:1,e:"Con las puntas hacia fuera, la rueda interior empieza a girar antes: el coche 'quiere' girar. El precio es estabilidad en recta."},
+ {q:"El coche se cruza demasiado al acelerar a la salida (4x4). ¿Qué ajuste es más eficaz?",o:["Más bloqueo en el diferencial trasero","Mover el reparto de par central hacia delante","Endurecer la barra trasera","Reparto de frenada más atrás"],a:1,e:"Más par delante hace que el eje delantero tire del coche y reduce el sobreviraje de potencia. Bajar el bloqueo trasero también ayudaría."},
+ {q:"Llevar el reparto de frenada más atrás…",o:["Estabiliza el coche al frenar","Ayuda al coche a rotar en la entrada, con riesgo de bloquear detrás","Solo afecta a la distancia de frenado","Aumenta el subviraje en la entrada"],a:1,e:"Con más freno atrás, la trasera trabaja más y pierde agarre lateral antes: el coche rota. Si te pasas, bloquea y trompea."},
+ {q:"¿Para qué sirve sobre todo la extensión (rebound) del amortiguador en rally?",o:["Para que la rueda suba más rápido en un bache","Para controlar cómo vuelve el coche tras un salto y cómo se transfiere el peso al soltar el freno o acelerar","Para cambiar la altura","Para mejorar la velocidad punta"],a:1,e:"La extensión frena el movimiento del amortiguador al estirarse: controla rebotes después de saltos y la velocidad a la que sube cada eje en las transferencias."},
+ {q:"Más bloqueo en retención (decel/coast) del diferencial trasero hace que…",o:["El coche rote más al soltar gas","La entrada sea más estable pero cueste más rotar","Haya más tracción con gas","Nada, solo actúa en potencia"],a:1,e:"La retención actúa sin gas y frenando. Más bloqueo mantiene ambas ruedas traseras unidas: más estabilidad, menos rotación."},
+ {q:"¿Por qué la caída (camber) negativa importa menos en grava que en asfalto?",o:["Porque en grava no hay balanceo","Porque en superficie suelta la huella del neumático y su ángulo influyen menos en el agarre total","Porque en grava se lleva toe-in","Porque los juegos no lo simulan"],a:1,e:"En grava el agarre depende mucho de que la rueda 'excave' y se mantenga en contacto; el ángulo fino de la goma pesa menos que en asfalto."},
+ {q:"Has endurecido mucho los muelles traseros. ¿Qué esperas?",o:["Más tracción a la salida","Más sobreviraje y peor tracción en baches","Más subviraje","Más velocidad punta"],a:1,e:"Un eje más rígido recibe más transferencia de carga y copia peor el terreno: pierde agarre relativo. Detrás, eso es más sobreviraje y menos tracción."},
+ {q:"Tu método correcto para probar setups es…",o:["Cambiar todo lo que creas necesario a la vez","Cambiar una sola cosa, de forma perceptible, y repetir el mismo tramo","Copiar setups de otros sin probar","Probar en un tramo diferente cada vez"],a:1,e:"Un cambio cada vez, en el mismo tramo, es la única forma de saber qué ha funcionado."}
+];
+
+/* ===================== NAV ===================== */
+function go(t){document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===t));window.scrollTo({top:0});
+  try{history.replaceState(null,"","#"+t)}catch(e){}}
+document.getElementById("nav").onclick=e=>{if(e.target.dataset.t)go(e.target.dataset.t)};
+
+/* ===================== APRENDER ===================== */
+let curCat="all";
+function renderLearn(){
+  const c=document.getElementById("cats");
+  c.innerHTML=`<div class="seg">${[["all","Todos"],...Object.entries(CATS)].map(([k,v])=>`<button data-c="${k}" class="${k===curCat?'on':''}">${v}</button>`).join("")}</div>`;
+  c.querySelectorAll("button").forEach(b=>b.onclick=()=>{curCat=b.dataset.c;renderLearn()});
+  document.getElementById("plist").innerHTML=P.filter(p=>curCat==="all"||p.cat===curCat).map(p=>`
+   <details class="param">
+    <summary><div><span class="pill">${CATS[p.cat]}</span><h3>${p.name}</h3><div class="sub">${p.lo} ↔ ${p.hi}</div></div><span class="muted">▾</span></summary>
+    <div class="pbody">
+      <p style="margin-top:0">${p.what}</p>
+      <div class="updown">
+        <div><h4 style="color:var(--acc)">▲ Hacia "${p.hi}"</h4><ul>${p.up.map(x=>`<li>${x}</li>`).join("")}</ul></div>
+        <div><h4 style="color:var(--und)">▼ Hacia "${p.lo}"</h4><ul>${p.down.map(x=>`<li>${x}</li>`).join("")}</ul></div>
+      </div>
+      <div class="surf"><div><b>Grava</b>${p.surf.grava}</div><div><b>Asfalto</b>${p.surf.asfalto}</div><div><b>Nieve</b>${p.surf.nieve}</div></div>
+      ${p.rbr?`<div class="game"><b>RBR:</b> ${p.rbr}</div>`:""}
+      ${p.acr?`<div class="game"><b>AC Rally:</b> ${p.acr}</div>`:""}
+      ${p.drv?`<p class="muted" style="font-size:13px">Solo en coches: ${p.drv.map(d=>({"4wd":"4x4","fwd":"tracción delantera","rwd":"tracción trasera"})[d]).join(", ")}.</p>`:""}
+      <button class="btn acc" onclick="tryParam('${p.id}',2)">Probarlo en el simulador →</button>
+    </div>
+   </details>`).join("");
+}
+
+/* ===================== SIMULADOR ===================== */
+const S={drv:"4wd",surf:"grava",v:Object.fromEntries(P.map(p=>[p.id,0])),last:null,hl:null};
+const BASE={"4wd":{entrada:1,apex:1,salida:1},fwd:{entrada:1.5,apex:2.5,salida:3.5},rwd:{entrada:0,apex:-.5,salida:-2.5}};
+const SURF_ADJ={grava:{absorcion:0},asfalto:{},nieve:{}};
+const avail=p=>!p.drv||p.drv.includes(S.drv);
+
+function renderCtls(){
+  const groups={};P.forEach(p=>(groups[p.cat]=groups[p.cat]||[]).push(p));
+  document.getElementById("ctls").innerHTML=Object.entries(groups).map(([c,ps])=>`<div class="grp"><h3>${CATS[c]}</h3>${ps.map(p=>`
+    <div class="ctl ${avail(p)?'':'dis'} ${S.hl===p.id?'hl':''}" id="c_${p.id}">
+      <div class="top"><label for="r_${p.id}">${p.name}</label><span class="val" id="v_${p.id}">${fmt(S.v[p.id])}</span></div>
+      <input type="range" min="-5" max="5" step="1" value="${S.v[p.id]}" id="r_${p.id}" data-id="${p.id}" aria-label="${p.name}">
+      <div class="ends"><span>${p.lo}</span><span>${p.hi}</span></div>
+    </div>`).join("")}</div>`).join("");
+  document.querySelectorAll("#ctls input").forEach(r=>r.oninput=()=>{const id=r.dataset.id,nv=+r.value,ov=S.v[id];S.v[id]=nv;S.last={id,dir:Math.sign(nv-ov)||1};document.getElementById("v_"+id).textContent=fmt(nv);update()});
+}
+const fmt=v=>v>0?"+"+v:""+v;
+
+function compute(vals){
+  const o={entrada:BASE[S.drv].entrada,apex:BASE[S.drv].apex,salida:BASE[S.drv].salida};
+  Object.keys(BARS).forEach(k=>o[k]=0);
+  P.forEach(p=>{if(!avail(p))return;const sf=(p.sf&&p.sf[S.surf])||1;
+    Object.entries(p.fx).forEach(([k,c])=>o[k]+=c*vals[p.id]*sf)});
+  // efectos de superficie: en nieve los diferenciales y la geometría pesan más, en asfalto la absorción pesa menos
+  return o;
+}
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+
+function update(){
+  const o=compute(S.v), b=compute(Object.fromEntries(P.map(p=>[p.id,0])));
+  // gauges
+  document.getElementById("gauges").innerHTML=Object.entries(OUTS).map(([k,l])=>{
+    const val=clamp(o[k],-10,10),pos=(val+10)/20*100,bp=(clamp(b[k],-10,10)+10)/20*100;
+    return `<div class="gauge"><div class="lbl"><b>${l}</b><span class="muted">${desc(val)}</span></div>
+      <div class="track"><div class="ghost" style="left:${bp}%"></div><div class="mk" style="left:${pos}%"></div></div></div>`}).join("");
+  // bars
+  document.getElementById("bars").innerHTML=`<h3 class="cond" style="margin:0 0 4px;font-size:17px;color:var(--acc);text-transform:uppercase">Comportamiento vs. setup base</h3>`+
+   Object.entries(BARS).map(([k,l])=>{const d=clamp(o[k]-b[k],-6,6),w=Math.abs(d)/6*50;
+    const col=d>=0?"var(--ok)":"var(--ovr)";
+    return `<div class="bar"><div class="lbl"><span>${l}</span><span style="color:${Math.abs(d)<.15?'var(--mut)':col}">${Math.abs(d)<.15?'=':(d>0?'▲ ':'▼ ')+word(Math.abs(d))}</span></div>
+     <div class="bt"><div class="c"></div><i style="left:${d>=0?50:50-w}%;width:${w}%;background:${col}"></i></div></div>`}).join("")+
+   (S.surf==="grava"||S.surf==="nieve"?`<p class="muted" style="font-size:12.5px;margin:6px 0 0">En ${S.surf}, <b>Absorción de baches</b> pesa más en el tiempo final que el balance fino.</p>`:`<p class="muted" style="font-size:12.5px;margin:6px 0 0">En asfalto, <b>Agilidad</b> y balance en el apex pesan más que la absorción.</p>`);
+  drawCorner(o,b);
+  explain(o,b);
+}
+function desc(v){const a=Math.abs(v);if(a<1)return"Neutro";const s=a<3?"Ligero ":a<6?"":"Fuerte ";return s+(v>0?"subviraje":"sobreviraje")}
+function word(a){return a<1?"poco":a<2.5?"bastante":"mucho"}
+
+function drawCorner(o,b){
+  // curva de 90º: centro (40,200), radio 150
+  const cx=30,cy=200,R=150;
+  const angs={entrada:-80,apex:-45,salida:-10}; // grados desde eje x hacia arriba
+  const pt=(a,r)=>[cx+r*Math.cos(a*Math.PI/180),cy+r*Math.sin(a*Math.PI/180)];
+  let s=`<path d="M${pt(-95,R)} A${R} ${R} 0 0 1 ${pt(5,R)}" fill="none" stroke="#2c3038" stroke-width="44"/>
+   <path d="M${pt(-95,R)} A${R} ${R} 0 0 1 ${pt(5,R)}" fill="none" stroke="#777" stroke-dasharray="5 6" stroke-width="1.5"/>`;
+  // los ángulos van sentido horario porque y crece hacia abajo; -90 = arriba
+  const phases=["entrada","apex","salida"],car=[];
+  phases.forEach(k=>{const v=clamp(o[k],-10,10);const off=Math.max(0,v)*2.2 - Math.max(0,-v)*.6;
+    const a=angs[k],[x,y]=pt(a,R+off);
+    const tangent=a+90; const yaw=-v*3.5; car.push({k,x,y,rot:tangent+yaw,v})});
+  // trazada real
+  const start=pt(-95,R),end=pt(5,R+Math.max(0,clamp(o.salida,-10,10))*2.6);
+  s+=`<path d="M${start} C ${car[0].x} ${car[0].y}, ${car[1].x} ${car[1].y}, ${car[1].x} ${car[1].y} S ${car[2].x} ${car[2].y}, ${end}" fill="none" stroke="var(--acc)" stroke-width="2"/>`;
+  car.forEach(c=>{const col=Math.abs(c.v)<1?"#e8eaed":c.v>0?"#3d8bfd":"#ff5a4e";
+    s+=`<g transform="translate(${c.x} ${c.y}) rotate(${c.rot})"><rect x="-13" y="-7" width="26" height="14" rx="4" fill="${col}"/><rect x="5" y="-5" width="5" height="10" rx="1.5" fill="#111" opacity=".6"/></g>`;
+    const lx=c.k==="entrada"?c.x+18:c.k==="apex"?c.x+14:c.x-10, ly=c.k==="entrada"?c.y+4:c.k==="apex"?c.y+22:c.y+24;
+    s+=`<text x="${lx}" y="${ly}" fill="#9aa1ad">${OUTS[c.k].replace(" (gas)","")}</text>`});
+  document.getElementById("corner").innerHTML=s;
+}
+
+function explain(o,b){
+  const el=document.getElementById("explain");
+  if(!S.last){return}
+  const p=PI[S.last.id],v=S.v[p.id];
+  if(v===0){el.innerHTML=`<h4>${p.name}: vuelta al valor base</h4><span class="muted">Sin efecto respecto al setup de referencia.</span>`;return}
+  const list=v>0?p.up:p.down,dirTxt=v>0?p.hi:p.lo;
+  // top cambios en salidas
+  const ch=Object.keys({...OUTS,...BARS}).map(k=>({k,d:o[k]-b[k]})).filter(x=>Math.abs(x.d)>.3).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d)).slice(0,3)
+    .map(x=>OUTS[x.k]?`${OUTS[x.k]}: ${x.d>0?"más subviraje":"más sobreviraje"}`:`${BARS[x.k]}: ${x.d>0?"mejora":"empeora"}`);
+  el.innerHTML=`<h4>${p.name} → ${dirTxt} (${fmt(v)})</h4>
+   <ul>${list.map(x=>`<li>${x}</li>`).join("")}</ul>
+   <p class="muted" style="font-size:13px;margin:8px 0 0"><b>Consejo para ${S.surf}:</b> ${p.surf[S.surf]}</p>
+   ${ch.length?`<p style="font-size:13px;margin:6px 0 0"><b>Efecto total de tu setup:</b> ${ch.join(" · ")}</p>`:""}`;
+}
+
+function tryParam(id,val){go("sim");S.hl=id;S.v[id]=val;S.last={id};
+  const p=PI[id];if(!avail(p)){S.drv=p.drv[0];segSet("drv",S.drv)}
+  renderCtls();update();setTimeout(()=>{const c=document.getElementById("c_"+id);c&&c.scrollIntoView({behavior:"smooth",block:"center"})},80)}
+function segSet(id,v){document.querySelectorAll("#"+id+" button").forEach(b=>b.classList.toggle("on",b.dataset.v===v))}
+document.getElementById("drv").onclick=e=>{if(!e.target.dataset.v)return;S.drv=e.target.dataset.v;segSet("drv",S.drv);renderCtls();update()};
+document.getElementById("surf").onclick=e=>{if(!e.target.dataset.v)return;S.surf=e.target.dataset.v;segSet("surf",S.surf);update()};
+document.getElementById("reset").onclick=()=>{P.forEach(p=>S.v[p.id]=0);S.last=null;S.hl=null;renderCtls();update();
+  document.getElementById("explain").innerHTML='<span class="muted">Setup base restaurado. Mueve cualquier ajuste para ver su efecto.</span>'};
+
+/* ===================== DIAGNÓSTICO ===================== */
+function renderDiag(){
+  const s=document.getElementById("syms");
+  s.innerHTML=SYMS.map((x,i)=>`<button data-i="${i}">${x.t}</button>`).join("");
+  s.onclick=e=>{const b=e.target.closest("button");if(!b)return;s.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+    const sy=SYMS[+b.dataset.i];
+    document.getElementById("fixes").innerHTML=`<h3 class="cond" style="margin:0 0 4px;font-size:20px">${sy.t}</h3>`+sy.f.map(([id,d,why],n)=>{const p=PI[id];
+      return `<div class="fix"><div class="n">${n+1}</div><div class="t"><b>${p.name}</b> <span class="${d>0?'arrow-up':'arrow-dn'}">${d>0?'▲ hacia '+p.hi:'▼ hacia '+p.lo}</span><br><span class="muted" style="font-size:14px">${why}</span>${p.drv?`<br><span class="pill">Solo ${p.drv.map(x=>({"4wd":"4x4","fwd":"tracción del.","rwd":"tracción tras."})[x]).join(" / ")}</span>`:""}</div>
+       <button class="btn" onclick="tryParam('${id}',${d*2})">Ver</button></div>`}).join("");
+    document.getElementById("fixes").scrollIntoView({behavior:"smooth",block:"start"})};
+}
+
+/* ===================== QUIZ ===================== */
+let qi=0,score=0,answered=false;
+function renderQuiz(){
+  const box=document.getElementById("qbox");
+  if(qi>=QUIZ.length){box.innerHTML=`<h2 style="margin:0">Resultado: ${score} / ${QUIZ.length}</h2>
+    <p>${score>=9?"Nivel ingeniero de equipo. 🏆":score>=6?"Buen nivel: repasa los fallos en la pestaña Ajustes.":"Repasa Fundamentos y Ajustes, y vuelve a intentarlo."}</p>
+    <button class="btn acc" onclick="qi=0;score=0;renderQuiz()">Repetir</button>`;return}
+  const q=QUIZ[qi];answered=false;
+  box.innerHTML=`<div class="prog"><i style="width:${qi/QUIZ.length*100}%"></i></div>
+   <div class="muted" style="font-size:13px">Pregunta ${qi+1} de ${QUIZ.length} · Aciertos: ${score}</div>
+   <h3 style="font-size:21px;margin:6px 0 10px">${q.q}</h3>
+   ${q.o.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join("")}
+   <div id="qfb"></div>`;
+  box.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{if(answered)return;answered=true;const i=+b.dataset.i;
+    if(i===q.a)score++;
+    box.querySelectorAll(".opt").forEach((x,j)=>{if(j===q.a)x.classList.add("good");else if(j===i)x.classList.add("bad")});
+    document.getElementById("qfb").innerHTML=`<p style="margin:10px 0"><b style="color:${i===q.a?'var(--ok)':'var(--ovr)'}">${i===q.a?'¡Correcto!':'No exactamente.'}</b> ${q.e}</p>
+     <button class="btn acc" onclick="qi++;renderQuiz()">${qi+1<QUIZ.length?'Siguiente →':'Ver resultado'}</button>`});
+}
+
+/* ===================== INIT ===================== */
+renderLearn();renderCtls();update();renderDiag();renderQuiz();
+const h=(location.hash||"").slice(1);if(["base","learn","sim","diag","quiz","metodo"].includes(h))go(h);
+window.addEventListener("hashchange",()=>{const t=location.hash.slice(1);if(document.getElementById(t))go(t)});
+</script>
+</body>
+</html>
